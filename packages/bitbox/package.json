@@ -1,0 +1,22 @@
+{
+    "name": "bitbox",
+    "version": "1.2.17",
+    "description": "bitbox",
+    "author": "Sergiu Toderascu <sergiu.toderascu@gmail.com> (http://bitboxjs.com)",
+    "license": "MIT",
+    "homepage": "https://github.com/bitboxjs/bitbox",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bitboxjs/bitbox"
+    },
+    "main": "index.js",
+    "keywords": [
+        "bitbox",
+        "inferno",
+        "cerebral",
+        "component",
+        "virtual dom",
+        "state controller",
+        "user interface"
+    ]
+}

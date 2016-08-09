@@ -1,0 +1,21 @@
+{
+    "name": "bitbox-demo",
+    "main": "index.js",
+    "version": "1.2.17",
+    "author": "Sergiu Toderascu <sergiu.toderascu@gmail.com> (http://bitboxjs.com)",
+    "license": "MIT",
+    "homepage": "https://github.com/bitboxjs/bitbox-demo",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bitboxjs/bitbox-demo"
+    },
+    "keywords": [
+        "bitbox",
+        "inferno",
+        "cerebral"
+    ],
+    "dependencies": {
+        "bitbox": "^1.2.17"
+    },
+    "description": "bitbox-demo package"
+}

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>box()</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script type="text/javascript" src="/packages/bitbox/dist/bit.js"></script>
+        <script type="text/javascript" src="/packages/bitbox/dist/box.js"></script>
+    </head>
+
+    <body>
+
+        <div id="app"></div>
+
+		<script>
+
+            const component = (bit, box) => box('p', bit.message)
+
+            component.hooks = {
+            	componentDidMount(node, props) {
+            		console.log('* hook didMount',node, props)
+            	},
+            	// componentDidUpdate(node, props, next) {
+            	// 	console.log('* hook didUpdate', props, next)
+            	// },
+            	// componentShouldUpdate(node, props, next) {
+            	// 	console.log('* hook shouldUpdate', props, next)
+            	// 	return props.message > 15
+            	// }
+            }
+
+            function hello(props, box) {
+                return box('div', {
+                    style: {
+                        fontSize: 22,
+                        fontFamily: 'Helvetica Neue'
+                    }
+                }, [
+                    box('h1', `Hello ${props.name}!`),
+                    box(component, {
+                        key: 'm1',
+                        message: Date(),
+                        onComponentDidMount(node, props) {
+                        	console.log('onComponentDidMount', props)
+                        },
+                        onComponentDidUpdate(node, props, next) {
+                        	console.log('onComponentDidUpdate', props, next)
+                        }
+                    }),
+                    box('u', box(component, {
+                        key: 'm2',
+                        message: (new Date()).getMilliseconds()
+                    })),
+                    box('strong', {
+                        style: {
+                            color: 'red'
+                        }
+                    }, ['box(',box.version,')'])
+                ])
+            }
+
+            function render() {
+                return box(hello, {
+                    name: 'World',
+                    time: Date.now(),
+                    root: '#app'
+                })
+            }
+
+            window.app = render()
+            setInterval(render, 1000)
+
+    	</script>
+    </body>
+</html>

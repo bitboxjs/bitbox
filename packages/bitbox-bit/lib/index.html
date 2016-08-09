@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Boilerplate</title>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script src="/packages/bitbox/dist/bit.js"></script>
+    <script>
+
+        function hello(bit, box) {
+            return box('h1', bit.name)
+        }
+
+        hello.state = { name: 'app.name' }
+
+        //const app = bit(state)
+
+    </script>
+</body>
+
+</html>
