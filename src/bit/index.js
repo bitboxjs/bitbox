@@ -68,7 +68,7 @@ export default function bit(input, ...args) {
     if (services)
         controller.addServices(services)
 
-    if (config.env === 'dev')
+    if (config.dev)
         controller.addModules({
             devtools: Devtools()
         })
@@ -171,7 +171,16 @@ export default function bit(input, ...args) {
             },
             set(path, value) {
                 store.set(path, value)
-            }
+            },
+            signals(path) {
+                return store.signals(path)
+            },
+            services(path) {
+                return store.services(path)
+            },
+            modules(path) {
+                return store.modules(path)
+            },
         })
 
         return Object.assign(proto, props, state, signals)

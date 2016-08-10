@@ -1,6 +1,6 @@
 {
   "name": "bitbox-src",
-  "version": "1.2.18",
+  "version": "1.2.20",
   "description": "bitbox source /2",
   "files": [
     "src"

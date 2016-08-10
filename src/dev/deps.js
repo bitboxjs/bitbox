@@ -57,7 +57,7 @@ const style = {
 	map(active) {
 		return {
 			display: 'inline-block',
-			padding: '4px 8px 4px 16px',
+			padding: '4px 8px 4px 14px',
 			background: active
 				? color('blue', 0)
 				: 'transparent',
