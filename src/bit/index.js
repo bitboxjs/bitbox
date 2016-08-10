@@ -88,7 +88,7 @@ export default function bit(input, ...args) {
 
     function store(input) {
 
-        if (typeof input === 'function' && input.name === 'connect')
+        if (typeof input === 'function' && input.type === 'connect')
             return input(store)
 
         if (input instanceof Promise)
@@ -168,10 +168,17 @@ export default function bit(input, ...args) {
         const proto = Object.create({
             get(props) {
                 return store.get(input, props)
+            },
+            set(path, value) {
+                store.set(path, value)
             }
         })
 
         return Object.assign(proto, props, state, signals)
+    }
+
+    store.set = function(path, value) {
+        controller.getSignals('stateChanged')({ path, value })
     }
 
     store.props = function(input, props) {

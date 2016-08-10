@@ -19,7 +19,7 @@ export function getTagType(input) {
         return STATIC_TAG
     if (input.isBitbox)
         return BITBOX_TAG
-    if (input.__proto__ && input.__proto__.name === 'Component')
+    if (input.prototype !== undefined && input.prototype.render !== undefined)
         return CLASS_TAG
     if (input.name === 'component')
         return COMPONENT_TAG

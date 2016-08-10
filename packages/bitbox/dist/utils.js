@@ -3,7 +3,7 @@
  * 
  * Author: Sergiu Toderascu <sergiu.toderascu@gmail.com> (http://bitboxjs.com)
  * License: MIT
- * Date: Wed Aug 10 2016 01:43:50 GMT+0300 (EEST)
+ * Date: Wed Aug 10 2016 23:47:39 GMT+0300 (EEST)
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {

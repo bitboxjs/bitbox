@@ -155,7 +155,7 @@ const style = {
 	},
 	sep: {
 		background: color('slate', 900, 0.9),
-		width: 1,
+		width: 2,
 		height: '100%',
 		position: 'absolute',
 		zIndex: 999,

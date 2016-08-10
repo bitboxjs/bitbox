@@ -1,7 +1,7 @@
 import box from '../../src/box'
 import Component from '../../src/component'
 import color from '../../src/utils/color'
-import {getNow} from '../../src/utils'
+import {getNow,isBrowser} from '../../src/utils'
 import {extractPaths,getBoundingClient} from './helpers'
 import instances from './instances'
 import paths from './paths'
@@ -20,11 +20,13 @@ export default class DevTools extends Component {
 		this.activeInstances = []
 		this.storeStats = {}
 		this.overlays = []
-		let state = window.localStorage.getItem('bitbox-dev')
-			state = state ? JSON.parse(state) : {
-				paths: [],
-				position: 'left'
-			}
+		let state = isBrowser
+			? window.localStorage.getItem('bitbox-dev')
+			: null
+		state = state ? JSON.parse(state) : {
+			paths: [],
+			position: 'left'
+		}
 		this.state = state
 	}
 
@@ -44,7 +46,7 @@ export default class DevTools extends Component {
 		store.on('unmount', e => {
 			this.onFlush([])
 		})
-		window.addEventListener('cerebral.dev.componentMapPath', event => {
+		isBrowser && window.addEventListener('cerebral.dev.componentMapPath', event => {
 			this.showOverlays(store.registry[event.detail.mapPath])
 		})
 	}
@@ -111,7 +113,7 @@ export default class DevTools extends Component {
 			paths: changedPaths
 		})
 
-		if (typeof window !== 'undefined' && store.config.dev && instances.length) {
+		if (isBrowser && store.config.dev && instances.length) {
 			const map = Object.keys(store.registry)
 				.reduce((map, key) => {
 					map[key] = store.registry[key].map(c => c.displayName)
@@ -125,7 +127,7 @@ export default class DevTools extends Component {
 						changes,
 						start: store.updateStart,
 						duration: store.updateEnd - store.updateStart,
-						components: instances.map(comp => comp.displayName)
+						components: instancesToUpdate.map(comp => comp.displayName)
 					}
 				}
 			}))
@@ -137,13 +139,14 @@ export default class DevTools extends Component {
 		const { store } = this.context
 		this.changedPaths = []
 		this.instancesToUpdate = []
+		console.log(`${path}:`, store.state(path))
 		this.setState({ paths: [path] })
 		this.showOverlays(store.registry[path] || [])
 	}
 
 	selectInstance(instance) {
 		const paths = Object.keys(instance.deps).map(key => instance.deps[key])
-		console.log(instance.tagName, instance)
+		console.log(`${instance.tagName}:`, instance)
 		this.setState({
 			selectedInstance: instance._index,
 			paths: paths

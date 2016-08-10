@@ -3,7 +3,7 @@
  * 
  * Author: Sergiu Toderascu <sergiu.toderascu@gmail.com> (http://bitboxjs.com)
  * License: MIT
- * Date: Wed Aug 10 2016 01:43:50 GMT+0300 (EEST)
+ * Date: Wed Aug 10 2016 23:47:39 GMT+0300 (EEST)
  * 
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -65,11 +65,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 
-	module.exports = __webpack_require__(133).default;
+	module.exports = __webpack_require__(130).default;
 
 /***/ },
 
-/***/ 133:
+/***/ 130:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -78,7 +78,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	var _bitboxTranspiler = __webpack_require__(134);
+	var _bitboxTranspiler = __webpack_require__(131);
 
 	var _bitboxTranspiler2 = _interopRequireDefault(_bitboxTranspiler);
 
@@ -112,7 +112,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 
-/***/ 134:
+/***/ 131:
 /***/ function(module, exports, __webpack_require__) {
 
 	/*!

@@ -16,7 +16,7 @@ export default ({ type, value, onClick }, box) =>
 			margin: 0,
 			padding: '0 0 8px 0',
 			color: type === 'bit'
-				? color('red', 0.8)
+				? color('green', 0.8)
 				: color('blue', 0.8)
 		}
 	}, [

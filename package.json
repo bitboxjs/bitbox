@@ -23,7 +23,8 @@
     "packages:reinstall": "npm run packages:purge && npm install",
     "build:prod-min": "cross-env NODE_ENV=production webpack --config ./webpack.production.min.config.js --progress --profile --colors",
     "build:prod": "cross-env NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors",
-    "build:watch": "cross-env NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors --watch"
+    "build:watch": "cross-env NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors --watch",
+    "build:watch-min": "cross-env NODE_ENV=production webpack --config ./webpack.production.min.config.js --progress --profile --colors --watch"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",

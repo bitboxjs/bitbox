@@ -12,7 +12,74 @@
 
     <body>
 		<script>
-            console.log(bit.version, bit.build)
+
+            store = {
+                name: 'demo',
+                state: {
+                    about: {
+                        name: 'bitbox',
+                        version: bit.version,
+                        build: bit.build
+                    },
+                    user: {
+                        name: 'World'
+                    }
+                },
+                config: {
+                    dev: true
+                }
+            }
+
+            function about(bit, box) {
+                return box('div', [
+                    box('h1', bit.name),
+                    box('ul', [
+                        box('li', [box('b', 'version '), bit.version]),
+                        box('li', [box('b', 'build '), bit.build])
+                    ])
+                ])
+            }
+
+            about.state = {
+                name: 'about.name',
+                version: 'about.version',
+                build: 'about.build'
+            }
+
+            function hello(bit, box) {
+                return box('div', [
+                    box('h1', ['Hello ', bit.name]),
+                    box('input', {
+                        value: bit.name,
+                        oninput(e) {
+                            bit.set(hello.state.name, e.target.value)
+                        }
+                    })
+                ])
+            }
+
+            hello.state = {
+                name: 'user.name'
+            }
+
+            function app(bit, box) {
+                return box('div', {
+                    style: {
+                        padding: 24
+                    }
+                }, [
+                    box(hello),
+                    box(about)
+                ])
+            }
+
+            app.state = {}
+
+            app.props = {
+                root: 'bitbox-hello'
+            }
+
+            bit(store)(box(app))
     	</script>
     </body>
 </html>

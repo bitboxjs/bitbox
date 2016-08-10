@@ -1,4 +1,4 @@
-export default({ name, aCount, stateChanged }, box) =>
+export default({ name, aCount, stateChanged, set }, box) =>
 	box('div', [
 		box('h1', `Hello ${name}!`),
 		box('input', {
@@ -13,7 +13,10 @@ export default({ name, aCount, stateChanged }, box) =>
 					value: aCount * 2
 				})
 			}
-		})
+		}),
+		box('button', {
+			onClick: () => set('app.title', 'Hola Lume!')
+		}, 'set title')
 	])
 
 export const name = 'Hello'

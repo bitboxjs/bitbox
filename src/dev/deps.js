@@ -73,7 +73,7 @@ const style = {
 		return {
 			marginBottom: 1,
 			background: 'transparent',
-			borderLeft: `1px solid ${active ? color('blue') : 'transparent'}`,
+			borderLeft: `2px solid ${active ? color('green') : 'transparent'}`,
 			color: color('white', 0.3)
 		}
 	}

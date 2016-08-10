@@ -56,11 +56,11 @@ box.get = function(input) {
 box.set = function(input) {
     if (arguments.length === 2) {
         const [key,input] = arguments
-        const com = load(input, box)
+        const com = load(input, inbox)
         loads.set(key, com)
         return com
     }
-    return load(input, box)
+    return load(input, inbox)
 }
 // delete
 box.delete = (input) => loads.delete(input)
@@ -105,6 +105,44 @@ box.render = function(vnode, root) {
     const target = getRoot(root, name)
     render(vnode, target)
     return vnode
+}
+
+export function inbox(input, props, children) {
+    if (!input)
+        throw(new Error(`box input required: string, function, object`))
+
+    let tag = box.get(input)
+    let vnode = null
+
+    if (arguments.length === 3) {
+        props = arguments[1] || {}
+        children = arguments[2] || null
+    } else if (arguments.length === 2 && isChildren(arguments[1])) {
+        children = arguments[1]
+        props = {}
+    }
+    props = props || {}
+
+    const tagType = getTagType(tag)
+
+    if (BITBOX_TAG === tagType) {
+        if (tag.props) {
+            const defaultProps = (typeof tag.props === 'function')
+                ? tag.props(props)
+                : tag.props
+            props = { ...defaultProps, ...props }
+        }
+    } else if (MODULE_TAG === tagType) {
+        tag = box.set(input)
+        if (tag.props) {
+            const defaultProps = (typeof tag.props === 'function')
+                ? tag.props(props)
+                : tag.props
+            props = { ...defaultProps, ...props }
+        }
+    }
+
+    return box.create(tag, props, children)
 }
 
 /** box()
@@ -154,12 +192,12 @@ export default function box(input, props, children) {
         : tag
 
     if (CONNECT_ACTION === actionType) {
-        return function connect(store) {
+        function connect(store) {
             const { root,
                 ...nextProps } = props
             nextProps.store = store
             vnode = box.create(tag, nextProps, children)
-            if (store.config.env === 'dev') {
+            if (isBrowser && store.config.dev) {
                 console.warn(`connected * store(${store.displayName}) * component(${tag.tagName}) * root(${root})`)
                 if (!dev.loaded) {
                     dev.loaded = true
@@ -173,28 +211,29 @@ export default function box(input, props, children) {
             }
             return box.render(vnode, root)
         }
+        connect.type = 'connect'
+        return connect;
     }
 
-    if (props.root) {
-        const { root,
-            ...nextProps } = props
-        vnode = box.create(tag, nextProps, children)
-    } else {
-        vnode = box.create(tag, props, children)
-    }
+    const { root,
+        ...restProps } = props
 
-    if (props.store && props.store.config.dev && !dev.loaded) {
+    vnode = box.create(tag, restProps, children)
+
+    if (isBrowser && props.store && props.store.config.dev && !dev.loaded) {
         dev.loaded = true
         box(dev, {
             root: 'bitbox-dev',
-            appRoot: props.root,
+            appRoot: root,
             appNode: vnode,
             store: props.store
         })
     }
 
-    if (props.root)
-        return box.render(vnode, props.root)
+    if (root)
+        return isBrowser
+            ? box.render(vnode, root)
+            : box.html(vnode)
 
     return vnode
 }

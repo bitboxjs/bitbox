@@ -33,7 +33,7 @@ module.exports = {
             filename: 'index.html'
         }),
         new SmartBannerPlugin(banner(pkg)),
-        //new ExtractTextPlugin('[name]-[hash].min.css'),
+        new ExtractTextPlugin('[name]-[hash].min.css'),
         new StatsPlugin('webpack.stats.json', {
             source: false,
             modules: false
@@ -57,8 +57,8 @@ module.exports = {
             loader: 'json'
         }, {
             test: /\.css$/,
-            loader: 'style!css?modules&localIdentName=[name]---[local]---[hash:base64:5]'
-            //loader: ExtractTextPlugin.extract('style', 'css?modules&localIdentName=[name]---[local]---[hash:base64:5]!postcss')
+            //loader: 'style!css?modules&localIdentName=[name]---[local]---[hash:base64:5]!postcss'
+            loader: ExtractTextPlugin.extract('style', 'css?modules&localIdentName=[name]---[local]---[hash:base64:5]')
         }]
     },
     postcss: [

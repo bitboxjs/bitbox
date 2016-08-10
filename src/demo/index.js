@@ -8,7 +8,7 @@ if(module.hot) {
         store.state = module.hot.data.state
     module.hot.accept()
 }
-
+window.app = app
 const demo = bitbox(store, app)
 
 // box(dev, {
