@@ -169,8 +169,8 @@ export default function bit(input, ...args) {
             get(props) {
                 return store.get(input, props)
             },
-            set(path, value) {
-                store.set(path, value)
+            set(path, value, opts) {
+                store.set(path, value, opts)
             },
             signals(path) {
                 return store.signals(path)
@@ -186,8 +186,8 @@ export default function bit(input, ...args) {
         return Object.assign(proto, props, state, signals)
     }
 
-    store.set = function(path, value) {
-        controller.getSignals('stateChanged')({ path, value })
+    store.set = function(path, value, opts) {
+        controller.getSignals('stateChanged')({ path, value }, opts)
     }
 
     store.props = function(input, props) {

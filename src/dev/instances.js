@@ -8,15 +8,15 @@ export default (bit, box) => {
 	return box('div', {
 		style: {
 			background: color('slate', 500),
-			height: '100%',
-			overflow: 'auto',
-			position: 'relative'
+			position: 'fixed',
+			...bit.position
 		}
 	}, [
-		box('div', {
-			style: style.sep
-		}),
-		box(appbar, [
+		box('div', { style: style.sep }),
+
+		box(appbar, {
+			width: bit.position.width
+		}, [
 			box(title, {
 				type: 'box',
 				value: bit.appNode.tag.tagName,
@@ -116,7 +116,11 @@ const style = {
 		fontWeight: 200
 	},
 	items: {
-		position: 'relative'
+		position: 'absolute',
+		top: 66,
+		bottom: 0,
+		overflow: 'auto',
+		width: '100%'
 	},
 	timeWrapper: {
 		fontSize: 12,
@@ -139,7 +143,7 @@ const style = {
 			opacity: active || selected
 				? 1
 				: 0.5,
-			transition: 'opacity 0.25s ease-out',
+			//transition: 'opacity 0.25s ease-out',
 			padding: 0,
 			position: 'relative',
 			background: active || selected
@@ -161,6 +165,6 @@ const style = {
 		zIndex: 999,
 		top: 0,
 		left: 0,
-		bottom: 0
+		//bottom: 0
 	}
 }

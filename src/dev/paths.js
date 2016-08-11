@@ -7,11 +7,15 @@ export default (bit, box) => {
 	return box('div', {
 		style: {
 			background: color('slate', 800),
-			height: '100%',
-			overflow: 'auto'
+			overflow: 'auto',
+			position: 'fixed',
+			...bit.position
 		}
 	}, [
-		box(appbar, [
+
+		box(appbar, {
+			width: bit.position.width
+		}, [
 			box(title, {
 				type: 'bit',
 				value: bit.storeName,
@@ -34,7 +38,9 @@ export default (bit, box) => {
 			])
 		]),
 
-		box('div', bit.items.map(item => {
+		box('div', {
+			style: style.items
+		}, bit.items.map(item => {
 
 			const { path, time, updateIndex = 0, instances } = item
 
@@ -71,6 +77,13 @@ export default (bit, box) => {
 }
 
 const style = {
+	items: {
+		position: 'absolute',
+		top: 66,
+		bottom: 0,
+		overflow: 'auto',
+		width: '100%'
+	},
 	item(active, selected) {
 		return {
 			position: 'relative',

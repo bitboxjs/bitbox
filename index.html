@@ -64,7 +64,9 @@
                     box('input', {
                         value: bit.name,
                         oninput(e) {
-                            bit.set(hello.state.name, e.target.value)
+                            bit.set(hello.state.name, e.target.value, {
+                                immediate: true
+                            })
                         }
                     })
                 ])

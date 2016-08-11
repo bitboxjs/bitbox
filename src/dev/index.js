@@ -6,7 +6,7 @@ import {extractPaths,getBoundingClient} from './helpers'
 import instances from './instances'
 import paths from './paths'
 import overlay from './overlay'
-import style from './style.css'
+import print from './print'
 
 export default class DevTools extends Component {
 
@@ -110,7 +110,11 @@ export default class DevTools extends Component {
 		this.activeInstances = instances.sort((a, b) => b._updateTime - a._updateTime)
 
 		this.setState({
-			paths: changedPaths
+			paths: changedPaths,
+			// changes: changedPaths.reverse().reduce((c, path) => {
+			// 	c[path] = store.state(path)
+			// 	return c;
+			// }, {})
 		})
 
 		if (isBrowser && store.config.dev && instances.length) {
@@ -140,16 +144,24 @@ export default class DevTools extends Component {
 		this.changedPaths = []
 		this.instancesToUpdate = []
 		console.log(`${path}:`, store.state(path))
-		this.setState({ paths: [path] })
+		this.setState({
+			paths: [path],
+			//changes: { [path]: store.state(path) }
+		})
 		this.showOverlays(store.registry[path] || [])
 	}
 
 	selectInstance(instance) {
+		const { store } = this.context
 		const paths = Object.keys(instance.deps).map(key => instance.deps[key])
 		console.log(`${instance.tagName}:`, instance)
 		this.setState({
 			selectedInstance: instance._index,
-			paths: paths
+			paths: paths,
+			// changes: paths.reverse().reduce((c, path) => {
+			// 	c[path] = store.state(path)
+			// 	return c;
+			// }, {})
 		})
 		this.showOverlays([instance])
 	}
@@ -168,7 +180,6 @@ export default class DevTools extends Component {
 		})
 
 		this._overlaysOpacity = 1
-
 		this.update()
 
 		this.tid = setTimeout(() => {
@@ -179,7 +190,7 @@ export default class DevTools extends Component {
 				this._overlaysOpacity = 1
 				this.update()
 			}, 500)
-		}, 250)
+		}, 2000)
 
 	}
 
@@ -192,95 +203,117 @@ export default class DevTools extends Component {
 	render() {
 		const { store } = this.context
 		//console.log('dev.render()', this.state)
+		const {position} = this.state
 
-		const props = {
-			style: {
-				display: 'flex',
-				position: 'fixed',
-				width: '100%',
-				bottom: 0,
-				left: 0,
-				fontFamily: 'Roboto, "Helvetica Neue", Arial',
-				fontSize: 16,
-				boxShadow: `0 0 16px rgba(0,0,0,0.1)`,
-				overflow: 'auto',
-				background: color('slate', 500),
-				color: color('slate', 50),
-				cursor: 'default',
-				zIndex: 999
-			}
-		}
+		const width = position === 'bottom'
+			? window.innerWidth
+			: window.innerWidth / 2
+		const height = position === 'bottom'
+			? window.innerHeight / 2
+			: window.innerHeight
 
 		const positions = {
 			left: {
 				top: 0,
-				bottom: 0,
 				left: 0,
-				right: 'auto',
-				maxWidth: '50%',
-				maxHeight: '100%'
-			},
-			bottom: {
-				width: '100%',
-				maxHeight: '50%',
 				bottom: 0,
-				left: 0,
-				right: 0
+				width: width / 2,
+				height
 			},
 			right: {
 				top: 0,
-				bottom: 0,
 				right: 0,
-				left: 'auto',
-				maxWidth: '50%',
-				maxHeight: '100%'
+				bottom: 0,
+				width: width / 2,
+				height
+			},
+			bottom: {
+				left: 0,
+				bottom: 0,
+				width: width / 2,
+				height: height,
 			}
 		}
 
-		const position = this.state.position && positions[this.state.position]
-			? positions[this.state.position]
-			: positions.left
-
-		props.style = {
-			...props.style,
-			...position
+		const pathsPositions = {
+			left: {
+				...positions.left
+			},
+			right: {
+				...positions.right,
+				right: positions.right.width
+			},
+			bottom: {
+				...positions.bottom
+			}
 		}
+
+		const instancesPositions = {
+			left: {
+				...positions.left,
+				left: positions.left.width
+			},
+			right: {
+				...positions.right
+			},
+			bottom: {
+				...positions.bottom,
+				left: positions.bottom.width
+			}
+		}
+
+		const pathsPosition = pathsPositions[position]
+		const instancesPosition = instancesPositions[position]
 
 		const appRoot = document.querySelector(this.props.appRoot)
 		if (appRoot) {
+			appRoot.style.display = 'block'
+			appRoot.style.overflow = 'auto'
+			document.body.style.margin = '0'
 			if (this.state.position === 'left') {
-				appRoot.style.display = 'block'
-				appRoot.style.margin = '0 0 0 50%'
+				appRoot.style.width = `${width}px`
+				appRoot.style.height = `${height}px`
+				appRoot.style.marginLeft = `${width}px`
 			}
 			if (this.state.position === 'right') {
-				appRoot.style.display = 'block'
-				appRoot.style.margin = '0 50% 0 0'
+				appRoot.style.width = `${width}px`
+				appRoot.style.height = `${height}px`
+				appRoot.style.marginLeft = `0px`
 			}
 			if (this.state.position === 'bottom') {
-				appRoot.style.display = 'block'
-				appRoot.style.margin = '0 0 50% 0'
+				appRoot.style.width = `${width}px`
+				appRoot.style.height = `${height}px`
+				appRoot.style.marginLeft = `0px`
 			}
 		}
 
-		const side = (c, width) =>
-			box('div', {
-				style: {
-					flex: 'auto',
-					width,
-					//height: '100%',
-					//overflow: 'auto'
-				}
-			}, c)
 
 		return box('bitbox-devtools', {
-			class: style.noselect,
 			style: {
+				fontFamily: 'Roboto, "Helvetica Neue", Arial',
+				fontSize: 16,
+				cursor: 'default',
 				zIndex: 999999999,
-				display: 'block'
+				display: 'block',
+				'-webkit-touch-callout': 'none',
+				'-webkit-user-select': 'none',
+				'-khtml-user-select': 'none',
+				'-moz-user-select': 'none',
+				'-ms-user-select': 'none',
+				'user-select': 'none',
+				WebkitFontSmoothing: 'antialiased',
+
 			}
 		}, [
-			box('div', props, [
-				side(box(paths, {
+			box('div', {
+				style: {
+					position: 'relative',
+					zIndex: 999,
+				}
+			}, [
+
+				box(paths, {
+					position: pathsPosition,
 					items: this.paths,
 					active: this.activePaths,
 					changed: this.changedPaths,
@@ -299,8 +332,10 @@ export default class DevTools extends Component {
 						this.setState({ position })
 						window.localStorage.setItem('bitbox-dev', JSON.stringify({position}))
 					}
-				}), '40%'),
-				side(box(instances, {
+				}),
+
+				box(instances, {
+					position: instancesPosition,
 					items: this.activeInstances,
 					updated: this.instancesToUpdate,
 					changedPaths: this.changedPaths,
@@ -315,17 +350,24 @@ export default class DevTools extends Component {
 					onPathSelect: path => {
 						this.selectPath(path)
 					}
-				}), '60%')
+				})
+
 			]),
+
+			// box(print, {
+			// 	value: this.state.changes
+			// }),
+
 			box('section', {
 				key: 'devtools-overlays',
 				style: {
-					display: 'block',
 					zIndex: 9,
+					color: color('slate', 800, 0.9),
 					opacity: this._overlaysOpacity,
 					transition: 'opacity 0.5s'
 				}
 			}, this.overlays.map(o => box(overlay, o)))
+
 		])
 	}
 }
