@@ -15,7 +15,6 @@ export default function statefull(com) {
     class bitbox extends Component {
 
         static get          = com.get
-        static root         = com.root
         static type         = com.type
         static index        = com.index
         static props        = com.props
@@ -32,87 +31,92 @@ export default function statefull(com) {
             if (!index[bitbox.displayName])
                 index[bitbox.displayName] = 0
 
+            this._isBitbox = true
             this._index = index[bitbox.displayName]++
-            this.displayName = bitbox.displayName
-            this.tagName = bitbox.tagName
-            this.props.children = props
-                ? props.children
-                : null
+            this.props.children = this.props.children || null
+            this.state = this.props.store === null && typeof com.state === 'function'
+                ? com.state(props)
+                : com.state
+            this._isUmounting = true
         }
 
-        get component() {
+        get module() {
             return com
         }
 
+        // store passed via props
         getChildContext() {
-            if (this.props.store)
+            if (this.props.store || this.props.store === null) {
                 return {
                     store: this.props.store
                 }
+            }
         }
+        // instance passed to store
+        connected(store) {
+            this.context.store = store
+        }
+
+        disconnected(store) {}
 
         componentWillMount() {
             this.context.store &&
-            this.context.store.mount(this, this.props)
+            this.context.store.connect(this)
+        }
+
+        componentDidMount() {
+            this._isUmounting = false
         }
 
         componentWillUnmount() {
             this._isUmounting = true
             this.context.store &&
-            this.context.store.unmount(this)
+            this.context.store.disconnect(this)
         }
 
-        shouldComponentUpdate() {
-            return false
+        shouldComponentUpdate(nextProps, nextState) {
+            if (this.context.store)
+                return false
+            return changed(this.props, nextProps) || changed(this.state, nextState)
         }
 
         componentWillReceiveProps(nextProps) {
-            const hasChange = changed(this.props, nextProps)
-            if (typeof bitbox.state === 'function'
+            if (this.context.store
+                && typeof bitbox.state === 'function'
                 && changed(this.context.store.deps(bitbox.state, this.props), this.context.store.deps(bitbox.state, nextProps))) {
-                this.context.store.mount(this, nextProps)
-                this.update()
+                this.context.store.reconnect(this, nextProps)
             } else {
                 changed(this.props, nextProps) && this.update()
             }
         }
 
-        unmount() {
-            this.context.store &&
-            this.context.store.unmount(this)
-            this._parentNode.unmount()
-        }
-
-        update() {
+        update(changes) {
             if (this._isUmounting)
                 return;
-            const start = getNow()
             this.forceUpdate()
-            this._updates++
-            this._updateDuration = getNow() - start
         }
 
         render() {
             this._renders++
+
+            let bit = {}
+
             if (!this.context.store) {
-                return box('bitbox-error', {
-                    style: {
-                        display: 'block',
-                        color: 'red',
-                        fontFamily: 'Menlo',
-                        fontSize: 12,
-                        padding: 8,
-                        background: `rgba(0,0,0,0.1)`
-                    }
-                }, [
-                    `<${this.displayName} /> missing store error`,
-                    box('pre', JSON.stringify(com, null, 4)),
-                    box('pre', JSON.stringify(this.props, null, 4))
-                ])
+                if (this.props.store === null) {
+                    const proto = Object.create({
+                        set: (path, value) => {
+                            this.setState({ [path]: value })
+                        }
+                    })
+                    bit = Object.assign(proto, this.props, this.state)
+                } else {
+                    return box('div', `bit(store, box(${this.module.tagName}))`)
+                }
+            } else {
+                bit = bitbox.get(this.context.store, this.props)
             }
 
-            const props = bitbox.get(this.context.store, this.props)
-            return box.create(bitbox.component, props, this.props.children)
+            return box.create(bitbox.component, bit, this.props.children)
         }
 
     }

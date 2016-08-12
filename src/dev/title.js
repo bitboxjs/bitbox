@@ -12,19 +12,19 @@ export default ({ type, value, onClick }, box) =>
 		style: {
 			fontFamily: 'Menlo',
 			fontWeight: 500,
-			fontSize: 16,
+			fontSize: 18,
 			margin: 0,
-			padding: '0 0 8px 0',
+			padding: 0,
 			color: type === 'bit'
 				? color('green', 0.8)
 				: color('blue', 0.8)
 		}
 	}, [
-		`${type}(`, box('span', {
+		`${type}`, box('span', {
 			style: {
+				float: 'right',
 				fontWeight: 400,
-				margin: 2,
 				color: color('white', 0.6)
 			}
-		}, value), `)`
+		}, value)
 	])

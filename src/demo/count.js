@@ -1,5 +1,10 @@
 export const name = 'count-button'
 
+export const props = {
+	root: name,
+	id: 'app'
+}
+
 export const state = (props) => ({
 	count: `${props.id}.count`
 })

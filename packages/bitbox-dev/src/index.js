@@ -1,1 +1,1 @@
-module.exports = require('../../../src/dev').default
+module.exports = require('../../../src/dev')

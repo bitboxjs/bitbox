@@ -19,24 +19,11 @@ export default (bit, box) => {
 		}, [
 			box(title, {
 				type: 'box',
-				value: bit.appNode.tag.tagName,
+				value: `${bit.updated.length}/${bit.items.length}`,
 				onClick: bit.onStoreClick
 					? bit.onStoreClick.bind(null)
 					: null
-			}),
-			box('div', {
-				style: {
-					color: color('slate', 50, 0.7),
-					fontSize: 13
-				}
-			}, [
-				box('span', `${bit.updated.length} / ${bit.items.length}`),
-				box('span', {
-					style: {
-						opacity: 0.5
-					}
-				}, ` instances`)
-			])
+			})
 		]),
 
 		box('div', {
@@ -61,7 +48,8 @@ export default (bit, box) => {
 						? bit.onSelect.bind(null, i)
 						: null
 				}, [
-					i.tagName,
+					//i._updateIndex, ' ',
+					i.module.tagName,
 					i._index
 						? box('span', {
 							style: style.index
@@ -117,7 +105,7 @@ const style = {
 	},
 	items: {
 		position: 'absolute',
-		top: 66,
+		top: 53,
 		bottom: 0,
 		overflow: 'auto',
 		width: '100%'

@@ -88,37 +88,43 @@ export default function bit(input, ...args) {
 
     function store(input) {
 
-        if (typeof input === 'function' && input.type === 'connect')
-            return input(store)
-
         if (input instanceof Promise)
             return input.then(store)
+
+        if (input.instance) {
+            store.connect(input.instance, arguments[1])
+            return store
+        }
+
+        if (input._isBitbox) {
+            store.connect(input, arguments[1])
+            return store
+        }
 
         const com = normalize(input)
 
         if ('state' in com) {
             const component = arguments[1] || com.component
             const props = arguments[2] || {}
-
-            const instance = {
-                displayName: com.displayName,
-                tagName: com.tagName,
-                _updateDuration: 0,
+            const instance = Object.create({
                 _updateTime: 0,
                 _updatedTime: 0,
-                update(get) {
-                    component(get(com, props))
+                _updateDuration: 0,
+                context: {},
+                update() {
+                    component(store.get(com, props), function() {
+                        return [ ...arguments ]
+                    })
                     this._updates = (this._updates || 0) + 1
                 },
-                get component() {
+                get module() {
                     return com
                 }
-            }
+            })
 
-            store.mount(instance, props)
-            instance.update(store.get)
+            store.connect(instance, props)
 
-            return store.get(com, props)
+            return store
         }
 
 		return store.get(input, arguments[1])
@@ -219,8 +225,11 @@ export default function bit(input, ...args) {
             }, {})
     }
 
-    store.mount = function(instance, props) {
-        const state = instance.component.state
+    store.connect = function(instance, props) {
+
+        const state = instance.module.state
+        props = props || instance.props
+
         instance.deps = (typeof state === 'function')
             ? state(props, store.compute)
             : state
@@ -229,14 +238,27 @@ export default function bit(input, ...args) {
             : null
 
         const result = register(instance)
-        store.emit('mount', { instance })
+
+        if (instance.connected)
+            instance.connected(store, result)
+
+        instance.update(null)
+
+        store.emit('connect', { instance, result })
 
         return result
     }
 
-    store.unmount = function(instance) {
+    store.reconnect = function(instance) {
+        unregister(instance)
+        register(instance)
+    }
+
+    store.disconnect = function(instance) {
         const result = unregister(instance)
-        store.emit('unmount', { instance })
+        if (instance.disconnected)
+            instance.disconnected(store)
+        store.emit('disconnect', { instance })
         return result
     }
 
@@ -311,10 +333,12 @@ export default function bit(input, ...args) {
         store.updateIndex++
         store.updateStart = getNow()
 
-        instances.forEach(instance => {
+        instances.forEach((instance, index) => {
             const start = getNow()
+            instance._updateIndex = index
             instance._updateTime = getNow()
-            instance.update(store.get)
+            instance.update(changes)
+            instance._updates++
             instance._updatedTime = getNow()
             instance._updateDuration = instance._updatedTime - instance._updateTime
         })
@@ -325,6 +349,8 @@ export default function bit(input, ...args) {
     bit.map.set(input, store)
     bit.map.set(store.tagName, store)
 
-    return store
+    return args.length
+        ? store(...args)
+        : store
 
 }

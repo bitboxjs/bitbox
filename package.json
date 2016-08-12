@@ -1,6 +1,6 @@
 {
     "name": "bitbox-src",
-    "version": "1.2.21",
+    "version": "1.2.23",
     "description": "bitbox source /2",
     "files": [
         "src"
@@ -18,7 +18,7 @@
     "license": "MIT",
     "scripts": {
         "clean": "rimraf packages/bitbox/dist",
-        "build": "npm run clean && mkdirp packages/bitbox/dist && npm run build:prod && npm run build:prod-min",
+        "build": "npm run clean && mkdirp packages/bitbox/dist && cp src/index.html packages/bitbox/dist/ && npm run build:prod && npm run build:prod-min",
         "packages:purge": "rm -rf node_modules",
         "packages:reinstall": "npm run packages:purge && npm install",
         "build:prod-min": "cross-env NODE_ENV=production webpack --config ./webpack.production.min.config.js --progress --profile --colors",
@@ -26,7 +26,8 @@
         "build:watch": "cross-env NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors --watch",
         "build:watch-min": "cross-env NODE_ENV=production webpack --config ./webpack.production.min.config.js --progress --profile --colors --watch",
         "newver": "node ./version.js",
-        "dist": "npm run build && npm run newver && cd packages/bitbox && npm publish"
+        "deploy": "surge ./packages/bitbox/dist bitboxjs.com",
+        "dist": "npm run newver && npm run build && npm run deploy && cd packages/bitbox && npm publish"
     },
     "devDependencies": {
         "babel-cli": "^6.11.4",
@@ -62,6 +63,7 @@
         "html-webpack-plugin": "^2.22.0",
         "inferno": "^0.7.24",
         "inferno-component": "^0.7.24",
+        "inferno-create-class": "^0.7.26",
         "inferno-create-element": "^0.7.24",
         "inferno-dom": "^0.7.24",
         "inferno-server": "^0.7.24",

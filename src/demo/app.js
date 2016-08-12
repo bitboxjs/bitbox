@@ -3,11 +3,10 @@ import * as count from './count'
 import * as hooks from './hooks'
 import * as toggle from './toggle'
 import * as hello from './input'
-import dev from '../dev'
-
+import * as classbox from './classbox'
 
 export const props = {
-	root: 'demo-app'
+	root: '#app'
 }
 
 export const state = {
@@ -20,6 +19,7 @@ export default function demoApp(bit, box) {
 
 	const tree = []
 
+	//tree.push(box(classbox))
 	tree.push(box(title))
 	tree.push(box(hello))
 	tree.push(box(count, { id: 'app', key: 'c-app' }))

@@ -8,8 +8,8 @@ const config = require('./webpack.config.js');
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const port = isDeveloping ? 3000 : process.env.PORT;
 const app = express();
-app.use(express.static(__dirname + '/src'));
-app.use(express.static(__dirname + '/packages'));
+//app.use(express.static(__dirname + '/src'));
+app.use('/dist', express.static(__dirname + '/packages/bitbox/dist'));
 
 if (isDeveloping) {
     const compiler = webpack(config);

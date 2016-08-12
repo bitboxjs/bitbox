@@ -1,9 +1,9 @@
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var StatsPlugin = require('stats-webpack-plugin');
-var banner = require('./banner')
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const StatsPlugin = require('stats-webpack-plugin');
+const banner = require('./banner')
 const SmartBannerPlugin = require('smart-banner-webpack-plugin')
 const pkg = require('./package.json')
 
@@ -27,12 +27,6 @@ module.exports = {
     },
     plugins: [
         new webpack.optimize.OccurenceOrderPlugin(),
-        new HtmlWebpackPlugin({
-            template: 'src/index.tpl.html',
-            inject: 'body',
-            filename: 'index.html'
-        }),
-        new ExtractTextPlugin('[name]-[hash].min.css'),
         new SmartBannerPlugin(banner(pkg)),
         new webpack.optimize.UglifyJsPlugin({
             compressor: {
@@ -61,13 +55,6 @@ module.exports = {
         }, {
             test: /\.json?$/,
             loader: 'json'
-        }, {
-            test: /\.css$/,
-            //loader: 'style!css?modules&localIdentName=[name]---[local]---[hash:base64:5]!postcss'
-            loader: ExtractTextPlugin.extract('style', 'css?modules&localIdentName=[name]---[local]---[hash:base64:5]')
         }]
-    },
-    postcss: [
-        require('autoprefixer')
-    ]
+    }
 };

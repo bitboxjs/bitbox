@@ -35,8 +35,7 @@ import {
     MOUNT_ACTION,
     CREATE_VNODE_ACTION
 } from './constants'
-import {getTagType,getActionType} from './helpers'
-import dev from '../dev'
+import {getTagType} from './helpers'
 
 box.version = BBVERSION
 box.build = BBBUILD
@@ -186,53 +185,11 @@ export default function box(input, props, children) {
         }
     }
 
-	const actionType = getActionType(tagType, tag, props)
-    const tagName = STATIC_TAG !== tagType
-        ? tag.displayName
-        : tag
+    vnode = box.create(tag, props, children)
 
-    if (CONNECT_ACTION === actionType) {
-        function connect(store) {
-            const { root,
-                ...nextProps } = props
-            nextProps.store = store
-            vnode = box.create(tag, nextProps, children)
-            if (isBrowser && store.config.dev) {
-                console.warn(`connected * store(${store.displayName}) * component(${tag.tagName}) * root(${root})`)
-                if (!dev.loaded) {
-                    dev.loaded = true
-                    box(dev, {
-                        root: 'bitbox-dev',
-                        appRoot: root,
-                        appNode: vnode,
-                        store
-                    })
-                }
-            }
-            return box.render(vnode, root)
-        }
-        connect.type = 'connect'
-        return connect;
-    }
-
-    const { root,
-        ...restProps } = props
-
-    vnode = box.create(tag, restProps, children)
-
-    if (isBrowser && props.store && props.store.config.dev && !dev.loaded) {
-        dev.loaded = true
-        box(dev, {
-            root: 'bitbox-dev',
-            appRoot: root,
-            appNode: vnode,
-            store: props.store
-        })
-    }
-
-    if (root)
+    if (props.root)
         return isBrowser
-            ? box.render(vnode, root)
+            ? box.render(vnode, props.root)
             : box.html(vnode)
 
     return vnode

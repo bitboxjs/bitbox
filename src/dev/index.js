@@ -1,5 +1,3 @@
-import box from '../../src/box'
-import Component from '../../src/component'
 import color from '../../src/utils/color'
 import {getNow,isBrowser} from '../../src/utils'
 import {extractPaths,getBoundingClient} from './helpers'
@@ -8,10 +6,15 @@ import paths from './paths'
 import overlay from './overlay'
 import print from './print'
 
-export default class DevTools extends Component {
+export const props = {
+	root: 'bitbox-dev',
+	store: null
+}
 
-	constructor(props) {
-		super(props)
+export default {
+
+	init() {
+
 		this.onFlush = this.onFlush.bind(this)
 		this.paths = []
 		this.changedPaths = []
@@ -20,49 +23,67 @@ export default class DevTools extends Component {
 		this.activeInstances = []
 		this.storeStats = {}
 		this.overlays = []
+
 		let state = isBrowser
 			? window.localStorage.getItem('bitbox-dev')
 			: null
-		state = state ? JSON.parse(state) : {
+		this.state = state ? JSON.parse(state) : {
 			paths: [],
 			position: 'left'
 		}
-		this.state = state
-	}
+		this._isUmounting = true
+	},
 
 	getChildContext() {
 		if (this.props.store)
 			return {
 				store: this.props.store
 			}
-	}
+	},
 
-	componentWillMount() {
+	connected(store, res) {
+		this.context.store = store
+		this.bootstrap()
+		this.onFlush([])
+		this.updateBody()
+		isBrowser && window.addEventListener('resize', event => {
+			this.update()
+			this.updateBody()
+		})
+	},
+
+	bootstrap() {
 		const { store } = this.context
 		store.on('flush', this.onFlush)
-		store.on('mount', e => {
+		store.on('connect', e => {
 			this.onFlush([])
 		})
-		store.on('unmount', e => {
+		store.on('disconnect', e => {
 			this.onFlush([])
 		})
 		isBrowser && window.addEventListener('cerebral.dev.componentMapPath', event => {
 			this.showOverlays(store.registry[event.detail.mapPath])
 		})
-	}
+	},
+
+	componentWillMount() {
+		this.context.store &&
+		this.context.store.connect(this)
+	},
 
 	componentDidMount() {
-		this.onFlush([])
-	}
+		this._isUmounting = false
+	},
 
 	componentWillUnmount() {
 		this._isUmounting = true
+		this.context.store.disconnect(this)
 		this.context.store.off('flush', this.onFlush)
-	}
+	},
 
 	shouldComponentUpdate() {
 		//return false
-	}
+	},
 
 	onFlush(changes) {
 		const { store } = this.context
@@ -120,10 +141,9 @@ export default class DevTools extends Component {
 		if (isBrowser && store.config.dev && instances.length) {
 			const map = Object.keys(store.registry)
 				.reduce((map, key) => {
-					map[key] = store.registry[key].map(c => c.displayName)
+					map[key] = store.registry[key].map(i => i.module.tagName)
 					return map;
 				}, {})
-
 			window.dispatchEvent(new CustomEvent('cerebral.dev.components', {
 				detail: {
 					map,
@@ -131,30 +151,30 @@ export default class DevTools extends Component {
 						changes,
 						start: store.updateStart,
 						duration: store.updateEnd - store.updateStart,
-						components: instancesToUpdate.map(comp => comp.displayName)
+						components: instancesToUpdate.map(i => i.module.tagName)
 					}
 				}
 			}))
 
 		}
-	}
+	},
 
 	selectPath(path) {
 		const { store } = this.context
 		this.changedPaths = []
 		this.instancesToUpdate = []
-		console.log(`${path}:`, store.state(path))
+		//console.log(`${path}:`, store.state(path))
 		this.setState({
 			paths: [path],
 			//changes: { [path]: store.state(path) }
 		})
 		this.showOverlays(store.registry[path] || [])
-	}
+	},
 
 	selectInstance(instance) {
 		const { store } = this.context
 		const paths = Object.keys(instance.deps).map(key => instance.deps[key])
-		console.log(`${instance.tagName}:`, instance)
+		//console.log(`${instance.module.tagName}:`, instance)
 		this.setState({
 			selectedInstance: instance._index,
 			paths: paths,
@@ -164,7 +184,7 @@ export default class DevTools extends Component {
 			// }, {})
 		})
 		this.showOverlays([instance])
-	}
+	},
 
 	showOverlays(instances) {
 		clearTimeout(this.tid)
@@ -172,7 +192,7 @@ export default class DevTools extends Component {
 		this.overlays = instances.map((i, index) => {
 			return {
 				key: index,
-				name: i.tagName,
+				name: i.module.tagName,
 				updates: i._updates,
 				duration: i._updateDuration,
 				client: getBoundingClient(i)
@@ -192,18 +212,51 @@ export default class DevTools extends Component {
 			}, 500)
 		}, 2000)
 
-	}
+	},
 
 	update() {
 		if (this._isUmounting)
 			return;
 		this.forceUpdate()
-	}
+	},
 
-	render() {
+	updateBody() {
+		const position = this.state.position
+
+		const width = position === 'bottom'
+			? window.innerWidth
+			: window.innerWidth / 2
+
+		const height = position === 'bottom'
+			? window.innerHeight / 2
+			: window.innerHeight
+
+		document.body.style.overflow = 'auto'
+		document.body.style.margin = '0'
+
+		if (position === 'left') {
+			document.body.style.width = `${width}px`
+			document.body.style.height = `${height}px`
+			document.body.style.marginLeft = `${width}px`
+		}
+		if (position === 'right') {
+			document.body.style.width = `${width}px`
+			document.body.style.height = `${height}px`
+			document.body.style.marginLeft = `0px`
+		}
+		if (position === 'bottom') {
+			document.body.style.width = `${width}px`
+			document.body.style.height = `${height}px`
+			document.body.style.marginLeft = `0px`
+		}
+	},
+
+	component(props, box) {
 		const { store } = this.context
-		//console.log('dev.render()', this.state)
-		const {position} = this.state
+		if (!store)
+			return;
+
+		const { position } = this.state
 
 		const width = position === 'bottom'
 			? window.innerWidth
@@ -265,28 +318,6 @@ export default class DevTools extends Component {
 		const pathsPosition = pathsPositions[position]
 		const instancesPosition = instancesPositions[position]
 
-		const appRoot = document.querySelector(this.props.appRoot)
-		if (appRoot) {
-			appRoot.style.display = 'block'
-			appRoot.style.overflow = 'auto'
-			document.body.style.margin = '0'
-			if (this.state.position === 'left') {
-				appRoot.style.width = `${width}px`
-				appRoot.style.height = `${height}px`
-				appRoot.style.marginLeft = `${width}px`
-			}
-			if (this.state.position === 'right') {
-				appRoot.style.width = `${width}px`
-				appRoot.style.height = `${height}px`
-				appRoot.style.marginLeft = `0px`
-			}
-			if (this.state.position === 'bottom') {
-				appRoot.style.width = `${width}px`
-				appRoot.style.height = `${height}px`
-				appRoot.style.marginLeft = `0px`
-			}
-		}
-
 
 		return box('bitbox-devtools', {
 			style: {
@@ -329,7 +360,10 @@ export default class DevTools extends Component {
 							: this.state.position === 'bottom'
 								? 'right'
 								: 'left'
-						this.setState({ position })
+						this.setState({ position }, () => {
+							this.updateBody()
+						})
+
 						window.localStorage.setItem('bitbox-dev', JSON.stringify({position}))
 					}
 				}),
@@ -343,7 +377,7 @@ export default class DevTools extends Component {
 					selected: this.state.selectedInstance,
 					registry: store.registry,
 					storeStats: this.storeStats,
-					appNode: this.props.appNode,
+					//appNode: this.props.appNode,
 					onSelect: instance => {
 						this.selectInstance(instance)
 					},

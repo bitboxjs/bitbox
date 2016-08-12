@@ -9,12 +9,12 @@ export default(bit, box) =>
 			left: bit.left,
 			right: bit.right,
 			margin: 0,
-			background: color('slate', 900, 0.5),
+			background: color('slate', 900, 0.7),
 			color: color('grey', 400, 0.5)
 		}
 	}, box('div', {
 		style: {
-			padding: '12px 16px',
+			padding: '16px 16px',
 			fontWeight: 400,
 			fontSize: 13,
 			fontFamily: 'Helvetica Neue'

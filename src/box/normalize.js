@@ -1,4 +1,4 @@
-import {camelCase,functionNameToTagName} from '../utils'
+import {camelCase,functionNameToTagName,isStatefulComponent} from '../utils'
 
 let _index = 0
 
@@ -12,24 +12,29 @@ export default function normalize(input) {
 
 	const component = typeof input === 'function'
 		? input
-		: ('component' in input && typeof input.component === 'function')
+		: (input.component && (typeof input.component === 'function' || typeof input.component.component === 'function'))
 			? input.component
-			: ('default' in input && typeof input.default === 'function')
+			: (input.default && (typeof input.default === 'function' || typeof input.default.component === 'function'))
 				? input.default
 				: undefined
 
+	const classcom = (input.default && (typeof input.default.component === 'function'))
+		|| (input.component && typeof input.component.component === 'function')
+
 	const type = state || signals
 		? 'statefull'
-		: 'stateless'
+		: classcom
+			? 'classcom'
+			: 'stateless'
 
-	const name = component
+	const name = component && component.name !== 'component'
 		? component.name || input.name
 		: input.name
 
 	const tagName = input.tagName
 		? input.tagName
-		: name
-			? functionNameToTagName(name)
+		: name || input.displayName
+			? functionNameToTagName(name || input.displayName)
 			: `bitbox-${index}`
 
 	const displayName = input.displayName || name || camelCase(tagName)
@@ -38,14 +43,11 @@ export default function normalize(input) {
 
 	return {
 		type,
-		root,
 		index,
 		props,
 		state,
 		hooks,
-		events,
 		signals,
-		update,
 		component,
 		displayName,
 		tagName,

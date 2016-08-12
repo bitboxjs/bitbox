@@ -34,7 +34,7 @@ export function getActionType(tagType, input, props = {}) {
     //const root = props.root || input.root
     if (props.store && props.root && input.type === 'statefull')
         return MOUNT_ACTION
-    else if (!props.store && props.root && input.type === 'statefull')
+    else if (props.store !== null && !props.store && props.root && input.type === 'statefull')
         return CONNECT_ACTION
     else if (props.root)
         return RENDER_ACTION

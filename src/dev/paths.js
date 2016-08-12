@@ -18,24 +18,11 @@ export default (bit, box) => {
 		}, [
 			box(title, {
 				type: 'bit',
-				value: bit.storeName,
+				value: `${bit.changed.length}/${bit.active.length}`,
 				onClick: bit.onStoreClick
 					? bit.onStoreClick.bind(null)
 					: null
-			}),
-			box('div', {
-				style: {
-					color: color('slate', 50, 0.7),
-					fontSize: 13
-				}
-			}, [
-				box('span', `${bit.changed.length} / ${bit.active.length}`),
-				box('span', {
-					style: {
-						opacity: 0.5
-					}
-				}, ` paths`)
-			])
+			})
 		]),
 
 		box('div', {
@@ -79,7 +66,7 @@ export default (bit, box) => {
 const style = {
 	items: {
 		position: 'absolute',
-		top: 66,
+		top: 53,
 		bottom: 0,
 		overflow: 'auto',
 		width: '100%'
@@ -91,7 +78,6 @@ const style = {
 			fontSize: 14,
 			margin: 0,
 			marginTop: 1,
-			marginRight: 1,
 			background: selected || active
 					? color('blue', 400, 0.1)
 					: 'transparent',

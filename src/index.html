@@ -6,8 +6,9 @@
         <title>bitbox()</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <script type="text/javascript" src="/packages/bitbox/dist/bit.js"></script>
-        <script type="text/javascript" src="/packages/bitbox/dist/box.js"></script>
+        <script type="text/javascript" src="bit.min.js"></script>
+        <script type="text/javascript" src="box.min.js"></script>
+        <script type="text/javascript" src="dev.min.js"></script>
     </head>
 
     <body>
@@ -102,9 +103,11 @@
                 data: 'user'
             }
 
-            bit(store)(box(app))
+            bit(store, box(app))
 
-            bit(store)(sync)
+            bit(store, sync)
+
+            bit(store, box(dev))
 
     	</script>
     </body>
