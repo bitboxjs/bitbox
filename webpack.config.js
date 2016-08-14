@@ -26,6 +26,9 @@ module.exports = {
         libraryTarget: 'umd',
         chunkFilename: "[id].chunk.js"
     },
+    resolve: {
+        extensions: ['', '.js','.box']
+    },
     plugins: [
         new HtmlWebpackPlugin({
             template: 'src/index.tpl.html',
@@ -43,13 +46,18 @@ module.exports = {
         new webpack.optimize.CommonsChunkPlugin(`common.js`)
     ],
     module: {
-        loaders: [{
-            test: /\.jsx?$/,
+        loaders: [
+            {
+                test: /\.box$/,
+                exclude: /node_modules/,
+                loaders: [
+                    'babel?presets[]=es2015&presets[]=stage-0',
+                    path.resolve('src/transform/loader')
+                ]
+            },
+        {
+            test: /\.js$/,
             exclude: /node_modules/,
-            // include: [
-            //     path.join(__dirname, 'src/'),
-            //     path.join(__dirname, 'node_modules/inferno-src/src/')
-            // ],
             loader: 'babel',
             query: {
                 "presets": ["es2015", "stage-0"]

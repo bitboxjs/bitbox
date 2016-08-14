@@ -1,6 +1,3 @@
-import load, {
-    loads
-} from './load'
 import normalize from './normalize'
 import {
     createChild
@@ -36,7 +33,9 @@ import {
     CREATE_VNODE_ACTION
 } from './constants'
 import {getTagType} from './helpers'
-
+import load, {
+    loads, components
+} from './load'
 box.version = BBVERSION
 box.build = BBBUILD
 
@@ -45,10 +44,16 @@ box.index = 0
 // box map
 box.map = loads
 
+box.components = components
+
+box.load = (input) => load(input, inbox)
+
 // get bitbox by input module|identifier
 box.get = function(input) {
     if (loads.has(input))
         return loads.get(input)
+    else if (components.has(input))
+        return components.get(input)
     return input
 }
 // set new bitbox
@@ -68,14 +73,14 @@ box.has = (input) => loads.has(input)
 // reset
 box.reset = (input) => {
 	loads.delete(input)
-	return load(input, box)
+	return load(input, inbox)
 }
 
 // render to string
 box.html = (vnode) => renderToString(vnode)
 
 // normalize input component
-box.normalize = (input) => normalize(input, box.index)
+box.normalize = (input) => normalize(input)
 
 // create new child node
 box.create = function(tag, attrs, children) {

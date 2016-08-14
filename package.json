@@ -1,6 +1,6 @@
 {
     "name": "bitbox-src",
-    "version": "1.2.23",
+    "version": "1.2.28",
     "description": "bitbox source /2",
     "files": [
         "src"
@@ -44,7 +44,7 @@
         "babel-preset-stage-0": "^6.5.0",
         "babelrc-rollup": "^2.0.0",
         "baobab": "^2.3.3",
-        "bitbox-transpiler": "^1.0.22",
+        "bitbox-transpiler": "^1.0.24",
         "cerebral": "^0.35.7",
         "cerebral-model": "^0.1.1",
         "cerebral-model-immutable": "^0.1.4",
@@ -95,5 +95,8 @@
         "webpack-dev-middleware": "^1.6.1",
         "webpack-dev-server": "^1.14.1",
         "webpack-hot-middleware": "^2.12.2"
+    },
+    "dependencies": {
+        "bitbox-transpiler": "^1.0.25"
     }
 }

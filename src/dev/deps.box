@@ -1,0 +1,41 @@
+import color from '../../src/utils/color'
+//import dep from './dep'
+import style from './dep.style'
+
+<deps({ stateMap, changedPaths, stats, onSelect }) export default>
+
+	const keys = Object.keys(stateMap)
+
+	<div style=(style().items) keys.map(key)>
+
+		const path = stateMap[key]
+		const paths = typeof path === 'object'
+			? Object.keys(path).map(k => path[k])
+			: [path]
+		const changed = paths.filter(path => changedPaths.indexOf(path) > -1).pop()
+		const s = style(changed)
+
+		const { updateIndex } = stats[path] || {}
+
+		const onClick = onSelect
+			? onSelect.bind(null, paths)
+			: null
+
+		<div style=(s.item) key>
+			<div style=(s.map)>
+				<span style=(s.key) on-click>key</span>
+				<this if (typeof path === 'object')
+					stateMap=path
+					changedPaths
+					stats
+					onSelect />
+				<span else style=(s.value) on-click>
+					<span>' = '</span>
+					<span>path</span>
+					<span style=(s.count)>`(${updateIndex||0})`</span>
+				</span>
+			</div>
+		</div>
+
+	</div>
+</deps>

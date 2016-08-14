@@ -7,7 +7,7 @@ export default function normalize(input) {
 	if (input.isBitbox)
 		return input
 
-	const index = _index++
+	const id = _index++
 	const { root, props, state, signals, hooks, events, update } = input
 
 	const component = typeof input === 'function'
@@ -31,19 +31,19 @@ export default function normalize(input) {
 		? component.name || input.name
 		: input.name
 
-	const tagName = input.tagName
+	const isTag = !!input.tagName
+	const tagName = isTag
 		? input.tagName
 		: name || input.displayName
 			? functionNameToTagName(name || input.displayName)
-			: `bitbox-${index}`
+			: `bitbox-${id}`
 
 	const displayName = input.displayName || name || camelCase(tagName)
 
-	const isBitbox = true
-
 	return {
+		id,
 		type,
-		index,
+		index: id,
 		props,
 		state,
 		hooks,
@@ -51,6 +51,7 @@ export default function normalize(input) {
 		component,
 		displayName,
 		tagName,
-		isBitbox
+		isTag,
+		isBitbox: true
 	}
 }

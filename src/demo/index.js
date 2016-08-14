@@ -12,3 +12,5 @@ if(module.hot) {
 
 bit(store, box(app))
 bit(store, box(dev))
+
+window.store = bit(store)

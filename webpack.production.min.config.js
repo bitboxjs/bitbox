@@ -25,6 +25,9 @@ module.exports = {
         library: '[name]',
         libraryTarget: 'umd'
     },
+    resolve: {
+        extensions: ['', '.js','.box']
+    },
     plugins: [
         new webpack.optimize.OccurenceOrderPlugin(),
         new SmartBannerPlugin(banner(pkg)),
@@ -45,8 +48,17 @@ module.exports = {
         })
     ],
     module: {
-        loaders: [{
-            test: /\.jsx?$/,
+        loaders: [
+            {
+                test: /\.box$/,
+                exclude: /node_modules/,
+                loaders: [
+                    'babel?presets[]=es2015&presets[]=stage-0',
+                    path.resolve('src/transform/loader')
+                ]
+            },
+        {
+            test: /\.js$/,
             exclude: /node_modules/,
             loader: 'babel',
             query: {

@@ -5,13 +5,14 @@ import classbox from './classbox'
 import {changed} from './helpers'
 
 export const loads = new Map()
+export const components = new Map()
 
 export default function load(input, box) {
 
 	if (loads.has(input))
 		return loads.get(input)
 
-	const com = normalize(input, box.index++)
+	const com = normalize(input)
 
 	let bitbox;
 
@@ -65,7 +66,10 @@ export default function load(input, box) {
 	}
 
 	loads.set(input, bitbox)
-	loads.set(com.tagName, bitbox)
+	if (com.isTag)
+		loads.set(com.tagName, bitbox)
+
+	components.set(com, bitbox)
 
 	return loads.get(input)
 }

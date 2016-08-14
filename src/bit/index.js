@@ -15,7 +15,7 @@ import {
     functionNameToTagName
 } from '../utils'
 import normalize from '../box/normalize'
-import {extractPaths} from './helpers'
+import {extractPaths,stateMap} from './helpers'
 
 const defaultOptions = {
     env: 'dev',
@@ -213,16 +213,14 @@ export default function bit(input, ...args) {
             : {}
     }
 
-    store.instances = function(changes) {
-        return traverse(changes)
-    }
+    store.stateMap = function(state, props) {
+        const deps = typeof state === 'function'
+            ? state(props, store.compute)
+            : state
 
-    store.status = function() {
-        return Object.keys(store.registry)
-            .reduce((props, key) => {
-                props[key] = store.registry[key].map(c => c.displayName)
-                return props
-            }, {})
+        return deps && Object.keys(deps).length
+            ? stateMap(deps)
+            : {}
     }
 
     store.connect = function(instance, props) {
@@ -230,36 +228,36 @@ export default function bit(input, ...args) {
         const state = instance.module.state
         props = props || instance.props
 
-        instance.deps = (typeof state === 'function')
-            ? state(props, store.compute)
-            : state
+        instance.deps = store.deps(state, props)
+        instance.stateMap = store.stateMap(state, props)
         instance.paths = instance.deps
-            ? Object.keys(instance.deps).map(key => instance.deps[key])
+            ? Object.keys(instance.deps)
             : null
 
-        const result = register(instance)
+        const registered = register(instance)
 
         if (instance.connected)
-            instance.connected(store, result)
+            instance.connected(store, registered)
 
         instance.update(null)
 
-        store.emit('connect', { instance, result })
-
-        return result
+        store.emit('connect', { instance, registered })
     }
 
-    store.reconnect = function(instance) {
-        unregister(instance)
-        register(instance)
+    store.reconnect = function(instance, props) {
+        store.disconnect(instance)
+        store.connect(instance, props)
     }
 
     store.disconnect = function(instance) {
-        const result = unregister(instance)
+        unregister(instance)
         if (instance.disconnected)
             instance.disconnected(store)
         store.emit('disconnect', { instance })
-        return result
+    }
+
+    store.connections = function(changes) {
+        return traverse(changes)
     }
 
     store.state = function(input, props) {
@@ -280,6 +278,32 @@ export default function bit(input, ...args) {
 
     store.model = function() {
         return controller.getModel()
+    }
+
+    store.instances = function(path) {
+        if (path)
+            return store.registry[path]
+
+        let instances = []
+        Object.keys(store.registry)
+            .forEach(key => {
+                instances = store.registry[key]
+                    .reduce((instances, instance) => {
+                        if (instances.indexOf(instance) === -1) {
+                            return instances.concat(instance)
+                        }
+                        return instances
+                    }, instances)
+            })
+        return instances
+    }
+
+    store.status = function() {
+        return Object.keys(store.registry)
+            .reduce((props, key) => {
+                props[key] = store.registry[key].map(c => c.module.displayName)
+                return props
+            }, {})
     }
 
     store.add = function(type, value) {

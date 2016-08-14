@@ -81,16 +81,12 @@ export default {
 		this.context.store.off('flush', this.onFlush)
 	},
 
-	shouldComponentUpdate() {
-		//return false
-	},
-
 	onFlush(changes) {
 		const { store } = this.context
 
 		const changedPaths = extractPaths(changes)
 		const activePaths = Object.keys(store.registry)
-		const instancesToUpdate = store.instances(changes)
+		const instancesToUpdate = store.connections(changes)
 
 		changedPaths.forEach(path => {
 			if (!this.storeStats[path])
@@ -159,29 +155,31 @@ export default {
 		}
 	},
 
-	selectPath(path) {
+	selectPaths(paths) {
 		const { store } = this.context
 		this.changedPaths = []
-		this.instancesToUpdate = []
-		//console.log(`${path}:`, store.state(path))
-		this.setState({
-			paths: [path],
-			//changes: { [path]: store.state(path) }
-		})
-		this.showOverlays(store.registry[path] || [])
+		//console.log(`path: ${path}:`, store.state(path))
+		this.setState({ paths })
+		const instances = paths.reduce((c, k) => {
+			return store.registry[k]
+				.reduce((instances, instance) => {
+					if (instances.indexOf(instance) === -1) {
+						return instances.concat(instance)
+					}
+					return instances
+				}, c)
+		}, [])
+		this.showOverlays(instances)
 	},
 
 	selectInstance(instance) {
 		const { store } = this.context
-		const paths = Object.keys(instance.deps).map(key => instance.deps[key])
-		//console.log(`${instance.module.tagName}:`, instance)
+		const paths = instance.paths
+		this.changedPaths = paths
+		//console.log(`instance: ${instance.module.tagName}:`, paths)
 		this.setState({
 			selectedInstance: instance._index,
 			paths: paths,
-			// changes: paths.reverse().reduce((c, path) => {
-			// 	c[path] = store.state(path)
-			// 	return c;
-			// }, {})
 		})
 		this.showOverlays([instance])
 	},
@@ -318,7 +316,6 @@ export default {
 		const pathsPosition = pathsPositions[position]
 		const instancesPosition = instancesPositions[position]
 
-
 		return box('bitbox-devtools', {
 			style: {
 				fontFamily: 'Roboto, "Helvetica Neue", Arial',
@@ -352,7 +349,7 @@ export default {
 					selected: this.state.paths,
 					registry: store.registry,
 					onSelect: path => {
-						this.selectPath(path)
+						this.selectPaths([path])
 					},
 					onStoreClick: () => {
 						const position = this.state.position === 'left'
@@ -381,8 +378,8 @@ export default {
 					onSelect: instance => {
 						this.selectInstance(instance)
 					},
-					onPathSelect: path => {
-						this.selectPath(path)
+					onPathSelect: paths => {
+						this.selectPaths(paths)
 					}
 				})
 

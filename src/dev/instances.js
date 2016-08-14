@@ -37,7 +37,7 @@ export default (bit, box) => {
 			const sel = i.paths && bit.selectedPaths
 				? i.paths.filter(path => bit.selectedPaths.indexOf(path) > -1)
 				: []
-			const selected = sel.length
+			const selected = sel.length // || bit.selected === i._index
 
 			return box('div', {
 				style: style.item(toUpdate, selected)
@@ -64,11 +64,13 @@ export default (bit, box) => {
 					: [ ]),
 				box(deps, {
 					key: 'item-deps',
-					deps: i.deps,
+					//deps: i.deps,
+					stateMap: i.stateMap,
 					stats: bit.storeStats,
-					changedPaths: selected
-						? bit.selectedPaths
-						: bit.changedPaths,
+					changedPaths: bit.selectedPaths,
+					// selected
+					// 	? bit.selectedPaths
+					// 	: bit.changedPaths,
 					onSelect: bit.onPathSelect
 						? bit.onPathSelect
 						: null

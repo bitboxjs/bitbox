@@ -5,8 +5,12 @@ export const props = {
 	id: 'app'
 }
 
-export const state = (props) => ({
-	count: `${props.id}.count`
+export const state = (props, compute) => ({
+	count: `${props.id}.count`,
+	computed: compute({
+		title: 'app.title',
+		acount: 'a.count'
+	}, ({ title }) => `title: ${title}`)()
 })
 
 export const signals = {

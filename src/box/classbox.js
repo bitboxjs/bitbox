@@ -8,6 +8,7 @@ export default function classbox(com) {
 	bitbox.index 			= com.index
 	bitbox.props 			= com.props
 	//bitbox.hooks 			= com.hooks
+	bitbox.state 			= com.state
 	bitbox.displayName 		= com.displayName
 	bitbox.tagName  		= com.tagName
 	bitbox.isBitbox			= true

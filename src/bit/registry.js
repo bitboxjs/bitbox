@@ -8,7 +8,7 @@ export default (store) => {
 
 		unregister(com)
 
-		const depsMap = extractDeps(com.deps)
+		const depsMap = com.deps //extractDeps(com.deps)
 		if (!depsMap || !Object.keys(depsMap).length)
 			return false
 
