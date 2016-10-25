@@ -6,17 +6,22 @@ const pkg = require('./package.json')
 const hotMiddleware = 'webpack-hot-middleware/client?reload=true'
 
 module.exports = {
-    devtool: 'eval-source-map',
+    devtool: 'eval', // 'eval-source-map',
     entry: {
-        bit: [hotMiddleware, path.join(__dirname, 'packages/bitbox-bit/src')],
-        box: [hotMiddleware ,path.join(__dirname, 'packages/bitbox-box/src')],
-        bitbox: [hotMiddleware ,path.join(__dirname, 'packages/bitbox/src')],
-        dom: [hotMiddleware, path.join(__dirname, 'packages/bitbox-dom/src')],
-        component: [hotMiddleware, path.join(__dirname, 'packages/bitbox-component/src')],
-        transform: [hotMiddleware, path.join(__dirname, 'packages/bitbox-transform/src')],
-        dev: [hotMiddleware, path.join(__dirname, 'packages/bitbox-dev/src')],
-        utils: [hotMiddleware, path.join(__dirname, 'packages/bitbox-utils/src')],
-        demo: [hotMiddleware, path.join(__dirname, 'packages/bitbox-demo/src')]
+        bit: [hotMiddleware, path.join(__dirname, 'src/.v4/bit.dist')],
+        box: [hotMiddleware, path.join(__dirname, 'src/.v4/box.dist')],
+        test: [hotMiddleware, path.join(__dirname, 'src/.v4/test')],
+        cerebral: [hotMiddleware, path.join(__dirname, 'src/.v4/cerebral')],
+        //Bit: [hotMiddleware, path.join(__dirname, 'packages/bitbox-bit/src')],
+        //Box: [hotMiddleware ,path.join(__dirname, 'packages/bitbox-box/src')],
+        //bitbox: [hotMiddleware ,path.join(__dirname, 'packages/bitbox/src')],
+        //dom: [hotMiddleware, path.join(__dirname, 'packages/bitbox-dom/src')],
+        //component: [hotMiddleware, path.join(__dirname, 'packages/bitbox-component/src')],
+        //transform: [hotMiddleware, path.join(__dirname, 'packages/bitbox-transform/src')],
+        //dev: [hotMiddleware, path.join(__dirname, 'packages/bitbox-dev/src')],
+        //utils: [hotMiddleware, path.join(__dirname, 'packages/bitbox-utils/src')],
+        //demo: [hotMiddleware, path.join(__dirname, 'packages/bitbox-demo/src')],
+        //proto: [hotMiddleware ,path.join(__dirname, 'src/proto')],
     },
     output: {
         path: path.join(__dirname, '/dist/'),
@@ -69,8 +74,5 @@ module.exports = {
             test: /\.css$/,
             loader: 'style!css?modules&localIdentName=[name]---[local]---[hash:base64:5]'
         }]
-    },
-    devServer: {
-        host: '0.0.0.0'
     }
 };

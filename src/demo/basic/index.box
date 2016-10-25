@@ -1,0 +1,51 @@
+import * as hello from './hello'
+import * as app from './app'
+
+<index(props) export default>
+	//console.log('index render', props)
+	/** the component */
+
+	<div style id='app-index'>
+		<span text>Indexssss</span>
+		<hr />
+		<hello name='rendering' />
+		<hr />
+		<hello name='testing' />
+		<hr />
+		<app />
+		<pre>JSON.stringify(props, null, 4)</pre>
+	</div>
+
+</index>
+
+<x()><c>
+	<hello name='testing' />
+	<hr />
+	<app />
+	<pre>JSON.stringify(props, null, 4)</pre>
+	</c>
+</x>
+
+const style = {
+	padding: 16,
+	margin: 0,
+	border: '1px solid #c00',
+	background: '#eee'
+}
+
+/** component properties */
+export const devbox = {
+	color: 'purple'
+}
+export const props = {
+	root: 'div#index-root',
+	dev: true
+}
+
+export const hooks = {
+	'did mount' (node, props) {
+		console.log('---- INDEX mounted', Object.keys(node))
+
+		//console.log('index mounted', node, props)
+	}
+}

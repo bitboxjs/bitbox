@@ -23,8 +23,8 @@ export function getTagType(input) {
         return CLASS_TAG
     if (input.name === 'component')
         return COMPONENT_TAG
-	if (input instanceof Promise)
-		return PROMISE_TAG
+	// if (input instanceof Promise)
+	// 	return PROMISE_TAG
     if (typeof input === 'object' || typeof input === 'function')
         return MODULE_TAG
     return UNKNOWN_TAG

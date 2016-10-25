@@ -1,0 +1,19 @@
+import overlay from './overlay'
+
+<overlays(bit) export default>
+	<div class="dev-overlays" bit.overlays.map(item)>
+		<overlay ...item />
+	</div>
+</overlays>
+
+overlays.props = {
+	root: 'devbox-overlays'
+}
+
+overlays.state = {
+	items: {}
+}
+
+// overlays.add = function(overlay) {
+// 	this.set('items')
+// }

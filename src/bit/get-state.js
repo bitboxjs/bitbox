@@ -1,13 +1,15 @@
-export default function getState(store, input, props) {
+import {cleanPath} from '../utils'
+
+export default function getState(get, compute, input, props) {
 
 	if (!input)
-		return store.getState()
+		return get()
 
 	if (typeof input === 'string')
-		return store.getState(input)
+		return get(cleanPath(input))
 
 	const stateMap = typeof input === 'function'
-		? input(props, store.compute)
+		? input(props, compute)
 		: input
 
 	if (!stateMap)
@@ -16,8 +18,8 @@ export default function getState(store, input, props) {
 	return Object.keys(stateMap)
 		.reduce((props, key) => {
 			props[key] = stateMap[key].getDepsMap
-				? stateMap[key].get(store.getState())
-				: store.getState(stateMap[key])
+				? stateMap[key].get(get())
+				: get(cleanPath(stateMap[key]))
 			return props
 		}, {})
 }

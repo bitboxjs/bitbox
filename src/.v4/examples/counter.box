@@ -1,0 +1,6 @@
+<counter(count) export default>
+	<div>
+		<h1>`Count: ${count}`</h1>
+		<button>`Inc`</button>
+	</div>
+</counter>

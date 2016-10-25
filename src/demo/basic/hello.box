@@ -1,0 +1,50 @@
+<hello(bit) export default>
+	//console.log('render hello', bit)
+	const onInput = (e) => bit.set('name', e.target.value)
+
+	/** the component */
+
+	<h1 style class='hibox'>
+		<span text>Hello</span>
+		<strong>bit.name</strong>
+		<hr />
+		<input on-input value=bit.name />
+	</h1>
+
+</hello>
+
+const style = {
+	padding: 24,
+	margin: 1,
+	background: '#f4f4f4'
+}
+
+/** component properties */
+
+export const devbox = {
+	color: 'orange'
+}
+
+export const props = {
+	root: 'section#hello',
+	name: 'World',
+	dev: true
+}
+
+export const state = {
+	name: 'name'
+}
+
+export const hooks = {
+	'did mount' (node, bit) {
+		//const domNode = node.instance._lastNode
+		//console.log('---- hello mounted', node.instance._lastNode)
+		//bit.set('mounted', Date.now())
+
+	},
+	'should update' (node, prev, next) {
+		//console.log('hello should update', node, prev, next)
+		return true
+		return prev.name !== next.name
+	}
+}

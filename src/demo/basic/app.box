@@ -1,0 +1,30 @@
+import * as render from './render'
+
+<app(props) export default>
+
+	/** the component */
+
+	<div style class='demo-app'>
+		<span text>Demo App</span>
+		<render />
+	</div>
+
+</app>
+
+const style = {
+	padding: 24,
+	margin: 8,
+	background: '#ccc'
+}
+
+/** component properties */
+
+export const props = {
+	root: '#demo-app'
+}
+
+export const hooks = {
+	'did mount' (node, props) {
+		//console.log('app mounted', node, props)
+	}
+}

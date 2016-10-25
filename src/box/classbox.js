@@ -1,17 +1,18 @@
 import createClass from 'inferno-create-class'
 
-export default function classbox(com) {
+export default (component) => {
 
-	const bitbox = 			createClass(com.component)
+	const classComponent = createClass(component)
+	classComponent.component = component
+	return classComponent
 
-	bitbox.type 			= com.type
-	bitbox.index 			= com.index
-	bitbox.props 			= com.props
-	//bitbox.hooks 			= com.hooks
-	bitbox.state 			= com.state
-	bitbox.displayName 		= com.displayName
-	bitbox.tagName  		= com.tagName
-	bitbox.isBitbox			= true
+	// classComponent.type 			= com.type
+	// classComponent.index 			= com.index
+	// classComponent.props 			= com.props
+	// classComponent.state 			= com.state
+	// classComponent.displayName 		= com.displayName
+	// classComponent.tagName  		= com.tagName
+	// classComponent.isBitbox			= true
 
-	return bitbox
+	//return classComponent
 }

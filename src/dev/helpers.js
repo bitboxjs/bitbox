@@ -1,8 +1,10 @@
 export function getBoundingClient(com) {
 
-    const domNode = com._lastNode && com._lastNode.dom
-        ? com._lastNode.dom
-        : null
+    const domNode = com instanceof Element
+        ? com
+        : com._lastNode && com._lastNode.dom
+            ? com._lastNode.dom
+            : null
     const bounds = domNode && domNode.getBoundingClientRect
         ? domNode.getBoundingClientRect()
         : {}

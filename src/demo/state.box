@@ -1,0 +1,25 @@
+export const props = {
+	root: '.state'
+}
+
+export const hooks = {
+	'did mount'(node) {
+		console.log('statefull component mounted', node)
+	}
+}
+
+export const state = {
+	count: 'app.count'
+}
+
+<statefull(bit) export default>
+	<div
+		class='statebox'
+		style={
+			padding: 24,
+			margin: 8
+		}>
+		<strong>bit.count</strong>
+		<div>bit.state('app.title')</div>
+	</div>
+</statefull>

@@ -1,5 +1,6 @@
-export default({ name, aCount, stateChanged, set }, box) =>
-	box('div', [
+export default(bit, box) => {
+	const { name, aCount, stateChanged, set } = bit
+	return box('div', [
 		box('h1', `Hello ${name}!`),
 		box('input', {
 			value: name,
@@ -18,6 +19,7 @@ export default({ name, aCount, stateChanged, set }, box) =>
 			onClick: () => set('app.title', 'Hola Lume!')
 		}, 'set title')
 	])
+}
 
 export const name = 'Hello'
 

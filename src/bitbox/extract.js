@@ -1,14 +1,15 @@
 import {camelCase,functionNameToTagName,isStatefulComponent} from '../utils'
+import types from './types'
 
-let _index = 0
-
-export default function normalize(input) {
-
-	if (input.isBitbox)
+extract.index = 0;
+function extract(input) {
+	if (!input)
+		return;
+	if (types.has(input.type))
 		return input
 
-	const id = _index++
-	const { root, props, state, signals, hooks, events, update } = input
+	const index = extract.index++
+	const { props, state, signals, hooks, moduleName } = input
 
 	const component = typeof input === 'function'
 		? input
@@ -18,14 +19,9 @@ export default function normalize(input) {
 				? input.default
 				: undefined
 
-	const classcom = (input.default && (typeof input.default.component === 'function'))
-		|| (input.component && typeof input.component.component === 'function')
-
 	const type = state || signals
-		? 'statefull'
-		: classcom
-			? 'classcom'
-			: 'stateless'
+		? types.statefull
+		: types.stateless
 
 	const name = component && component.name !== 'component'
 		? component.name || input.name
@@ -36,22 +32,22 @@ export default function normalize(input) {
 		? input.tagName
 		: name || input.displayName
 			? functionNameToTagName(name || input.displayName)
-			: `bitbox-${id}`
+			: `box-${index}`
 
 	const displayName = input.displayName || name || camelCase(tagName)
 
-	return {
-		id,
+	return Object.create({
+		...input,
+		index,
 		type,
-		index: id,
 		props,
 		state,
 		hooks,
 		signals,
 		component,
+		moduleName,
 		displayName,
-		tagName,
-		isTag,
-		isBitbox: true
-	}
+		tagName
+	})
 }
+export default extract;

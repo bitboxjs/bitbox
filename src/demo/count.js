@@ -10,21 +10,21 @@ export const state = (props, compute) => ({
 	computed: compute({
 		title: 'app.title',
 		acount: 'a.count'
-	}, ({ title }) => `title: ${title}`)()
+	}, ({ title, acount }) => `title: ${title}-${acount}`)()
 })
 
 export const signals = {
 	clicked: 'buttonClicked'
 }
 
-export default({ id, count, clicked }, box) => {
+export default({ id, count, computed, clicked }, box) => {
 	return box('button', {
 		onClick() {
 			clicked({ id })
 		},
 		style: {
-			fontSize: 24,
+			fontSize: 14,
 			padding: 12
 		}
-	}, [ id, ' / ', count ])
+	}, [ id, ' / ', count, computed ])
 }

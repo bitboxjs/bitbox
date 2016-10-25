@@ -1,0 +1,28 @@
+import color from '../../utils/color'
+
+<meta(props) export default>
+
+	const style = {
+		position: 'absolute',
+		background: color('blue', 0.3),
+		color: 'rgba(255,255,255,1)',
+		padding: 24,
+		margin: 0,
+		fontFamily: 'Menlo',
+		fontSize: 13,
+		top: props.top,
+		left: props.left,
+		zIndex: 999999999
+	}
+
+	<pre style>
+		JSON.stringify(props, null, 4)
+	</pre>
+</meta>
+
+
+meta.props = {
+	root: 'box-meta',
+	top: 10,
+	left: 10
+}

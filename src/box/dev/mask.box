@@ -1,0 +1,65 @@
+import color from '../../utils/color'
+
+mask.props = {
+	root: 'div#box-mask'
+}
+
+export default function mask(client, box) {
+	if (!client || (!client.width && !client.height))
+		return box('div')
+
+	const width = window.innerWidth
+	const height = window.innerHeight
+
+	const style = {
+		position: 'absolute',
+		zIndex: 9999999,
+		background: color('slate', 900, 0.7),
+		transition: 'transform 0.1s',
+		width,
+		height,
+		top: 0,
+		left: 0,
+		// right: 0,
+		// bottom: 0
+	}
+
+	const leftSide = {
+		//background: color('red', 0.8),
+		transform: `translate3d(-${client.right}px, -${(height - client.top) - client.height}px, 0)`,
+	}
+
+	const topSide = {
+		//background: color('blue', 0.8),
+		transform: `translate3d(${client.left}px, -${(height) - (client.top)}px, 0)`,
+	}
+
+	const rightSide = {
+		//background: color('green', 0.8),
+		transform: `translate3d(${client.right}px, ${client.top}px, 0)`,
+	}
+
+	const bottomSide = {
+		//background: color('orange', 0.8),
+		transform: `translate3d(-${client.left}px, ${client.top + client.height}px, 0)`,
+	}
+
+	const onClick = (e) => client.onClick && client.onClick(e)
+
+	return box('div', {
+		style: {
+			// display: 'block',
+			// position: 'absulute',
+			// top: 0,
+			// left: 0,
+			// right: 0,
+			// bottom: 0
+		}
+	}, [
+		box('div', { key: 'left', onClick, style: { ...style, ...leftSide }}),
+		box('div', { key: 'top', onClick, style: { ...style, ...topSide }}),
+		box('div', { key: 'right', onClick, style: { ...style, ...rightSide }}),
+		box('div', { key: 'bottom', onClick, style: { ...style, ...bottomSide }})
+	])
+
+}

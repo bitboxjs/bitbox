@@ -1,0 +1,39 @@
+<render-demo(bit) export default>
+
+	//console.log('render bit', bit, this)
+
+	const onClick = () => bit.set('count', bit.count + 1)
+
+	<div class='render-demo' style={ padding: 24 }>
+		<button on-click text>Increment</button>
+		<pre>JSON.stringify(bit, null, 4)</pre>
+	</div>
+
+</render-demo>
+
+export const props = {
+	foo: 10,
+	count: 4,
+	dev: true
+}
+
+export const state = {
+	count: 10
+}
+
+export const hooks = {
+	'did mount' (instance, props) {
+		//console.warn('demo render mounted', instance, props)
+	},
+	'will update' (instance, props, next) {
+		console.warn('demo render will update', instance, props, next)
+	},
+	'should update' (instance, props, next) {
+		const u = next.count < 10 || !!next.force
+		//console.warn('demo render should update', u, next)
+		return u
+	},
+	'will unmount' (instance, props) {
+		console.warn('xdemo render unmounted', instance, props)
+	}
+}

@@ -1,0 +1,82 @@
+import color from '../../utils/color'
+
+export default function overlay(bit, box) {
+
+	const {
+		index,
+		length,
+		name,
+		type,
+		client,
+		renders,
+		background = 'blue',
+		opacity = 0.9,
+		showMask,
+		showMore,
+		show = true,
+		zIndex
+	} = bit
+
+	if (!show)
+		return box('div')
+
+	return box('div', {
+		style: {
+			position: 'absolute',
+			color: 'white',
+			top: showMask
+				? (client.top + client.offset) + client.height + 1
+				: (client.top + client.offset),
+			left: client.left,
+			width: client.width,
+			height: showMask
+				? 'auto'
+				: client.height,
+			transition: opacity === 0.5
+				? 'none'
+				: opacity === 0
+					? 'opacity 0.5s ease-out'
+					: 'opacity 0.3s ease-out',
+			opacity,
+			background: color(background, 0.8),
+			display: 'block',
+			zIndex: 999999 + zIndex, //showMask ? 99999999 : index + 100
+		},
+		onMouseMove: (e) => {
+			bit.set('opacity', 0.8)
+		},
+		onMouseOut: (e) => {
+			bit.set('opacity', 0.5)
+		},
+		onClick: (e) => {
+			bit.set('show', false)
+			bit.onClick && bit.onClick(e)
+		}
+	}, [
+		box('div', {
+			style: {
+				fontFamily: 'Menlo',
+				fontSize: 11,
+				padding: 8,
+				color: color('white')
+			}
+		}, [
+			box('strong', name),
+			box('span', `:${type.toString()}`),
+			box('span', ` (${index}/${length}) *${renders} | `),
+			box('span', `${client.width} x ${client.height}`)
+		])
+	])
+}
+
+overlay.props = {}
+
+overlay.state = {}
+
+overlay.hooks = {
+	'did mount' (node, bit) {
+		node.tid = setTimeout(() => {
+			bit.set('opacity', 0.5)
+		}, 100)
+	}
+}

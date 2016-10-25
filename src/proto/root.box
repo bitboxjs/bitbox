@@ -1,0 +1,63 @@
+/**
+	root.box sample */
+export default function rootBox(bit) {
+	console.log('root bit box')
+}
+
+const serebano = {
+	profile: {
+		_id: 'serebano',
+ 		firstName: 'Serebano',
+ 		lastName: 'Toderascu'
+ 	}
+}
+
+rootBox.props = Object.create({
+	defaultUser: serebano
+})
+
+rootBox.state = Object.create({
+	users: [serebano],
+	posts: [{
+	    title: 'Some post',
+	    user: serebano
+	}],
+	user: {
+		serebano: {
+			_id: 'serebano-1'
+		}
+	},
+	profile: {
+		firstName: 'Serebano',
+		lastName: 'Toderascu'
+	}
+})
+
+function addAction(bit) {
+	const { input, output, state } = bit
+	console.warn('addAction', bit)
+	const _id = (state.get('items._id') || 0) + 1
+	state.set('items._id', _id)
+	state.set(`items.${_id}`, input.item)
+	state.push(`users`, bit.defaultUser)
+	output({ _id })
+}
+
+function postAddAction(bit) {
+	console.log('postAddAction', bit)
+}
+
+rootBox.signals = {
+	add: [ addAction, postAddAction ]
+}
+
+rootBox.services = {
+	storage: {
+		get(key) {
+			return window.localStorage.getItem(key)
+		},
+		set(key, value) {
+			return window.localStorage.setItem(key, value)
+		}
+	}
+}

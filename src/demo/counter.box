@@ -1,0 +1,18 @@
+<counter(bit) export default>
+	//console.log('coiunter', bit.state(state, bit))
+	const onClick = () => bit.set(`app.counters.${bit.id}`, bit.count + 1)
+
+	<div>
+		<strong>bit.count</strong>
+		<button on-click>'inc'</button>
+	</div>
+</counter>
+
+export function state(props) {
+	return {
+		count: `app.counters.${props.id}`
+	}
+}
+
+
+export const moduleName = 'demo/counter.box'

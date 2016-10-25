@@ -103,11 +103,15 @@
                 data: 'user'
             }
 
-            bit(store, box(app))
+            box(app, {
+                store: bit(store)
+            })
 
-            bit(store, sync)
+            box(dev, {
+                store: bit(store)
+            })
 
-            bit(store, box(dev))
+            bit(store).connect(sync)
 
     	</script>
     </body>

@@ -1,10 +1,15 @@
-export const name = 'super-store'
+export const name = 'demo'
 
 export const state = {
 	name: 'World',
 	app: {
 		title: 'Demo App',
-		count: 100
+		count: 100,
+		counters: {
+			foo: 10,
+			bar: 20,
+			baz: 30
+		}
 	},
 	a: { count: 10 },
 	b: { count: 20 },

@@ -1,0 +1,22 @@
+export default function profile(bit) {
+	console.log('profile', bit)
+	return {
+		fullName: `${bit.first} ${bit.last} (${bit.age})`,
+		user: bit
+	}
+}
+
+profile.props = {
+	id: 'test',
+	root: 'div#aaa'
+}
+
+profile.signals = {
+	foo: 'stateChanged'
+}
+
+profile.state = {
+	first: 'profile.firstName',
+	last: 'profile.lastName',
+	age: 'profile.age',
+}

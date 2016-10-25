@@ -1,0 +1,64 @@
+import color from '../../src/utils/color'
+
+mask.props = {
+	root: 'box-mask'
+}
+
+export default function mask(client, box) {
+	if (!client)
+		return box('box-mask')
+
+	const style = {
+		position: 'absolute',
+		zIndex: 9999999,
+		background: color('slate', 0.8)
+	}
+
+	const leftSide = {
+		width: client.left,
+		left: 0,
+		top: 0,
+		bottom: 0
+	}
+
+	const topSide = {
+		width: client.right + client.left,
+		height: client.top,
+		left: client.left,
+		top: 0,
+		right: 0
+	}
+
+	const rightSide = {
+		left: client.left + client.width,
+		top: client.top,
+		right: 0,
+		bottom: 0
+	}
+
+	const bottomSide = {
+		width: client.width,
+		top: client.top + client.height,
+		left: client.left,
+		bottom: 0
+	}
+
+	const onClick = (e) => client.onClick && client.onClick(e)
+
+	return box('box-mask', {
+		style: {
+			display: 'block',
+			position: 'absulute',
+			top: 0,
+			left: 0,
+			right: 0,
+			bottom: 0
+		}
+	}, [
+		box('div', { key: 'left', onClick, style: { ...style, ...leftSide }}),
+		box('div', { key: 'top', onClick, style: { ...style, ...topSide }}),
+		box('div', { key: 'right', onClick, style: { ...style, ...rightSide }}),
+		box('div', { key: 'bottom', onClick, style: { ...style, ...bottomSide }})
+	])
+
+}

@@ -8,6 +8,8 @@ const SmartBannerPlugin = require('smart-banner-webpack-plugin')
 const pkg = require('./package.json')
 
 module.exports = {
+    //target: 'node',
+    //watch: true,
     entry: {
         bit: path.join(__dirname, 'packages/bitbox-bit/src'),
         box: path.join(__dirname, 'packages/bitbox-box/src'),

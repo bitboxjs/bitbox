@@ -34,7 +34,7 @@ export default (store) => {
 		})
 	}
 
-	function traverse(level, currentPath = [], comonents = []) {
+	function _traverse(level, currentPath = [], comonents = []) {
 
 		const registry = store.registry
 
@@ -60,6 +60,33 @@ export default (store) => {
 		})
 
 		return comonents
+	}
+
+	function traverse (level, currentPath, componentsToRender) {
+
+		let componentsMapKeys = Object.keys(store.registry)
+
+	  Object.keys(level).forEach(function (key) {
+		currentPath.push(key)
+
+		if (level[key] === true) {
+		  var stringPath = currentPath.join('.')
+		  componentsMapKeys.forEach(function (componentMapKey) {
+			if (stringPath.indexOf(componentMapKey) === 0 || componentMapKey.indexOf(stringPath) === 0) {
+			  componentsToRender = componentsMap[componentMapKey].reduce(function (componentsToRender, component) {
+				if (componentsToRender.indexOf(component) === -1) {
+				  return componentsToRender.concat(component)
+				}
+				return componentsToRender
+			  }, componentsToRender)
+			}
+		  })
+		} else {
+		  componentsToRender = traverse(level[key], currentPath, componentsToRender)
+		}
+		currentPath.pop()
+	  })
+	  return componentsToRender
 	}
 
 	return { register, unregister, traverse }

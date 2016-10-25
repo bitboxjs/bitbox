@@ -1,16 +1,15 @@
-export default function stateless(com) {
+export default(com, box) => {
 
-	function bitbox(props) {
-		return com.component(props)
+	function stateless(props) {
+		return com.component(props, box)
 	}
 
-	bitbox.type 			= 'stateless'
-	bitbox.index 			= com.index
-	bitbox.props 			= com.props
-	bitbox.hooks 			= com.hooks
-	bitbox.displayName 		= com.displayName
-	bitbox.tagName  		= com.tagName
-	bitbox.isBitbox			= true
+	stateless.type 			= 'stateless'
+	stateless.index 		= com.index
+	stateless.props 		= com.props
+	stateless.hooks 		= com.hooks
+	stateless.displayName 	= com.displayName
+	stateless.isBitbox		= true
 
-	return bitbox
+	return stateless
 }

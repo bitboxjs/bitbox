@@ -1,0 +1,16 @@
+import item from './item'
+import createBox from '../ext/create-box'
+
+const itemView = createBox(item)
+
+<items(ctx) export default>
+	<div>
+		<ul ctx.items.map(id)>
+			<item-view id />
+		</ul>
+	</div>
+</items>
+
+items.state = (get, props) => ({
+	items: Object.keys(get('app.items'))
+})

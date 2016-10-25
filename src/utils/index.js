@@ -1,5 +1,9 @@
 export const isBrowser = typeof window !== 'undefined' && window.document;
 
+export function defineProp(obj, prop, desc) {
+	Object.defineProperty(obj, prop, desc)
+}
+
 export const NO_RENDER = 'NO_RENDER';
 
 export const isBitboxModule = (o) => typeof o === 'object' && typeof o.component === 'function'
@@ -105,20 +109,35 @@ export function camelCase(subj, all) {
 export const getId = (name) => `${name.toUpperCase()}-${Date.now()}-${Math.random()}`.replace(/\./g, '-')
 
 
-export function getBoundingClient(com) {
+export function getBoundingClient(dom) {
 
-    const domNode = findDOMNode(com)
-    const bounds = domNode.getBoundingClientRect()
+    const bounds = dom.getBoundingClientRect()
 
     return {
-        bounds: {
-            width: bounds.width || 0,
-            height: bounds.height || 0,
-            top: bounds.top || 0,
-            right: bounds.right || 0,
-            bottom: bounds.bottom || 0,
-            left: bounds.left || 0,
-        },
+        width: bounds.width || 0,
+        height: bounds.height || 0,
+        top: bounds.top || 0,
+        right: bounds.right || 0,
+        bottom: bounds.bottom || 0,
+        left: bounds.left || 0,
         offset: document.body.scrollTop || 0
     }
+}
+
+
+export function cleanPath(path = '') {
+    if (Array.isArray(path)) {
+        path = path.join('.')
+    }
+	if (!path.replace)
+		console.log('path.replace', path)
+    return path.replace(/\.\*\*|\.\*/, '')
+}
+
+export function rangeToPercent(number, min, max){
+   return ((number - min) / (max - min));
+}
+
+export function percentToRange(percent, min, max) {
+   return((max - min) * percent + min);
 }

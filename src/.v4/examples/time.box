@@ -1,0 +1,26 @@
+import Printer from '../middlewares/printer'
+
+export default function Time(api, tag) {
+
+	api.use(Printer)
+
+	let interval;
+
+	const changeColor = (color) => api.set('color', color)
+	const start = () => setInterval(() => api.set('date', Date()), 1000)
+	const stop = () => clearInterval(interval)
+
+	<view(props)>
+		<div style={ color: props.color }>
+			<h2>props.date</h2>
+		</div>
+	</view>
+
+	api.connect('*', () => render(api.get(view, tag), '#timapp'))
+
+	return {
+		changeColor,
+		start,
+		stop
+	}
+}

@@ -1,0 +1,16 @@
+<hello({ name, nameChanged }) export default>
+	<section>
+		<h1>`Hello ${name}!`</h1>
+		<input on-input=nameChanged value=name />
+	</section>
+</hello>
+
+hello.state = {
+	name: 'name'
+}
+
+hello.signals = (get, ctx) => ({
+	nameChanged: (e) => get('nameChanged')({
+		value: e.target.value
+	})
+})

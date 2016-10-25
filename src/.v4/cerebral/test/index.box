@@ -1,0 +1,21 @@
+import hello from './hello'
+import items from './items'
+import title from './title'
+
+import createBox from '../ext/create-box'
+
+const helloView = createBox(hello)
+const itemsView = createBox(items)
+const titleView = createBox(title)
+
+<index(ctx) export>
+	<main>
+		<h3>ctx.x</h3>
+		<title-view />
+		<hr />
+		<hello-view />
+		<items-view />
+	</main>
+</index>
+
+export default createBox(index)

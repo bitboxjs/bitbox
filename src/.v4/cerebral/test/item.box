@@ -1,0 +1,18 @@
+<item({ title, selected, itemSelected }) export default>
+	<li style={ padding: 8, background: selected ? 'blue' : 'grey' }>
+		<label>title</label>
+		<button on-click=itemSelected text>*</button>
+	</li>
+</item>
+
+item.state = (get, props) => ({
+	...props,
+	...get(`app.items.${props.id}.*`),
+})
+
+
+item.signals = (get, ctx) => ({
+	itemSelected: () => get('itemSelected')({
+		id: ctx.id
+	})
+})

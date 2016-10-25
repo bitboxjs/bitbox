@@ -1,0 +1,16 @@
+<title({ color, ...ctx }) export default>
+	<h1 style={ color } on-click=(ctx.colorChanged)>
+		ctx.title
+	</h1>
+</title>
+
+title.state = {
+	title: 'app.title',
+	color: 'app.color'
+}
+
+title.signals = (get, ctx) => ({
+	colorChanged: () => get('colorChanged')({
+		value: ctx.color !== 'blue' ? 'blue' : 'green'
+	})
+})

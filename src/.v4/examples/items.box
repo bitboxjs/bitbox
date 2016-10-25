@@ -1,0 +1,40 @@
+import Printer from '../middlewares/printer'
+
+export default function Items(api, tag, init = []) {
+
+	api.use(Printer)
+	api.set(init)
+	//const toArray = () => api.get(Object.keys).map(api.get)
+
+	const push = (items = [], ...input) => [ ...items, ...input ]
+	const pop = (items = []) => items.slice(0, items.length - 1)
+	const unshift = (items = [], ...input) => [ ...input, ...items ]
+	const shift = (items = []) => {
+		const [removed, ...rest] = items
+		return rest
+	}
+
+	<view(items)>
+		<div>
+			<h2>`Items`</h2>
+			<ul items.map(item, index)>
+				<li>index + ': ' + item</li>
+			</ul>
+		</div>
+	</view>
+
+	api.connect(() => render(api.get(view, tag), '#items-app'))
+
+	return {
+		get(idx) {
+			return typeof idx === 'number'
+				? api.get(String(idx))
+				: api.get(...arguments)
+		},
+		index: (idx) => api.get(items => items.indexOf(idx)),
+		push: (...input) => api.set(push, ...input),
+		pop: () => api.set(pop),
+		unshift: (...input) => api.set(unshift, ...input),
+		shift: () => api.set(shift),
+	}
+}

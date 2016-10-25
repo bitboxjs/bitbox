@@ -1,0 +1,9 @@
+<counters(bit) export default>
+	<pre>JSON.stringify(bit, null, 4)</pre>
+</counters>
+
+export const state = {
+	counters: 'app.counters.*'
+}
+
+export const moduleName = 'demo/counters.box'

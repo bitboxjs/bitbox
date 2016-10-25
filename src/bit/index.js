@@ -4,18 +4,23 @@ import {
 } from 'cerebral'
 import ImmutableModel from 'cerebral-model-immutable'
 import MutableModel from 'cerebral-model'
-import ModulesProvider from 'cerebral-provider-modules'
+import modulesProvider from 'cerebral-provider-modules'
 import Devtools from 'cerebral-module-devtools'
+import boxProvider from './providers/box.js'
 import getState from './get-state'
 import getSignals from './get-signals'
 import registry from './registry'
-import extractDeps from '../utils/extract-deps'
 import {
     getNow,
-    functionNameToTagName
+    cleanPath,
+    functionNameToTagName,
+    def
 } from '../utils'
-import normalize from '../box/normalize'
-import {extractPaths,stateMap} from './helpers'
+import {extractPaths,stateMap,getProps,getDeps,getStateMap,extractDeps} from './helpers'
+import query from './query'
+import Bit from './bit.create'
+import getByPath from './get/by-path'
+import ctx from './bit.ctx'
 
 const defaultOptions = {
     env: 'dev',
@@ -23,11 +28,28 @@ const defaultOptions = {
     immutable: true
 }
 
+bit.define = function(obj, key, desc) {
+    return Object.defineProperty(obj, key, desc)
+}
+
 bit.version = BBVERSION
 bit.build = BBBUILD
-
 bit.index = 0
 bit.map = new Map()
+
+// bit.define(bit, 'getByPath', {
+//     value: getByPath
+// })
+//
+// bit.define(bit, 'create', {
+//     value: (...args) => new create(...args)
+// })
+
+const ctxmap = new Map()
+
+bit.context = function(context) {
+    ctxmap.set(context.name, context)
+}
 
 export default function bit(input, ...args) {
 
@@ -36,8 +58,8 @@ export default function bit(input, ...args) {
             ? bit.map.get(input)(...args)
             : bit.map.get(input)
 
-    if (input instanceof Promise)
-        return (com) => input.then(bit).then(com)
+    if (typeof input === 'function' && !input.state)
+        return input(bit, ...args)
 
     const {
         state,
@@ -57,237 +79,217 @@ export default function bit(input, ...args) {
         ImmutableModel(state) :
         MutableModel(state)
 
-    const controller = Controller(model)
+    const instance = Controller(model)
 
     if (modules)
-        controller.addModules(modules)
+        instance.addModules(modules)
 
     if (signals)
-        controller.addSignals(signals)
+        instance.addSignals(signals)
 
     if (services)
-        controller.addServices(services)
+        instance.addServices(services)
 
     if (config.dev)
-        controller.addModules({
+        instance.addModules({
             devtools: Devtools()
         })
 
-    controller.addSignals({
+    instance.addSignals({
         stateChanged: [
             function setState({ input, state }) {
+                //console.log('input', input)
                 state.set(input.path, input.value)
             }
         ]
     })
 
-    controller.addContextProvider(ModulesProvider)
+    instance.addContextProvider(modulesProvider)
+    //instance.addContextProvider(boxProvider)
+
+    config.server = instance.isServer
+
+    let registry = {}
+
 
     /** store()
         */
 
-    function store(input) {
+    // function store() {
+    //     return store.ctx(...arguments)
+	// }
+    const store = new Bit(input, instance)
+    //store.model = model
+    //store.instance = instance
+    // bit.context(function state(bit) {
+    //     return {
+    //         value(box, props) {
+    //             return getState(instance.get, bit.compute, box, props)
+    //         },
+    //         input(box, props) {
+    //             console.log('input.state', box, props)
+    //             //return bit.set(path, value, opts)
+    //         }
+    //     }
+    // })
 
-        if (input instanceof Promise)
-            return input.then(store)
+    // store.get = function(box, props) {
+    //     return getState(instance.get, bit.compute, box, props)
+    // }
 
-        if (input.instance) {
-            store.connect(input.instance, arguments[1])
-            return store
-        }
-
-        if (input._isBitbox) {
-            store.connect(input, arguments[1])
-            return store
-        }
-
-        const com = normalize(input)
-
-        if ('state' in com) {
-            const component = arguments[1] || com.component
-            const props = arguments[2] || {}
-            const instance = Object.create({
-                _updateTime: 0,
-                _updatedTime: 0,
-                _updateDuration: 0,
-                context: {},
-                update() {
-                    component(store.get(com, props), function() {
-                        return [ ...arguments ]
-                    })
-                    this._updates = (this._updates || 0) + 1
-                },
-                get module() {
-                    return com
-                }
-            })
-
-            store.connect(instance, props)
-
-            return store
-        }
-
-		return store.get(input, arguments[1])
-	}
-
-    const {
-        register,
-        unregister,
-        traverse
-    } = registry(store)
-
+    store.define = (key, value) => bit.define(store, key, value)
+    //store.define('get', { value: state.get })
     store.index = bit.index++
-	store.displayName = name || `store-${store.index}`
-    store.tagName = name
-        ? functionNameToTagName(name)
-        : `store-${store.index}`
     store.config = config
-    store.isServer = controller.isServer
     store.compute = Computed
-    store.getState = controller.get
 
-    store.get = function get(input, props = {}) {
+    // const bitbox = bit.create(input)
+    // bitbox.model
+    //
 
-        if (!input) return;
-
-        // merge default props with input
-        props = store.props(input.props, props)
-
-        // get state with props
-        const stateMap = (typeof input.state === 'function')
-            ? input.state(props, store.compute)
-            : input.state
-
-        const state = stateMap && Object.keys(stateMap).length
-            ? store.state(stateMap)
-            : {}
-
-        // get signals with state
-        const signalsMap = (typeof input.signals === 'function')
-            ? input.signals(props, store.signals)
-            : input.signals
-
-        const signals = signalsMap && Object.keys(signalsMap).length
-            ? store.signals(signalsMap)
-            : {}
-
-        const proto = Object.create({
-            get(props) {
-                return store.get(input, props)
-            },
-            set(path, value, opts) {
-                store.set(path, value, opts)
-            },
-            signals(path) {
-                return store.signals(path)
-            },
-            services(path) {
-                return store.services(path)
-            },
-            modules(path) {
-                return store.modules(path)
-            },
-        })
-
-        return Object.assign(proto, props, state, signals)
+    store.keys = function() {
+        return Object.keys(registry)
     }
 
     store.set = function(path, value, opts) {
-        controller.getSignals('stateChanged')({ path, value }, opts)
+        instance.getSignals('stateChanged')({ path, value }, opts)
+    }
+    //
+    // store.signals = function(input, props) {
+    //     return getSignals(instance.getSignals, input, props)
+    // }
+    //
+    // store.services = function(input) {
+    //     return instance.getServices(input)
+    // }
+    //
+    // store.modules = function(input) {
+    //     return instance.getModules(input)
+    // }
+
+    // store.model = function() {
+    //     return instance.getModel()
+    // }
+    //
+    // function ctx(box, props = {}) {
+    //
+    //     if (!box) return;
+    //
+    //     // merge default props with input
+    //     props = getProps(box.props, props)
+    //
+    //     // get state with props
+    //     const state = store.state(box, props)
+    //     const signals = store.signals(box, state)
+    //
+    //     function box(props) {
+    //         const combox = store.compute(box.state, box)(ctx(box, props))
+    //         return combox.getDepsMap
+    //             ? combox.get(instance.get())
+    //             : combox
+    //     }
+    //
+    //     return Object.assign(Object.create({
+    //         set(path, value, opts) {
+    //             store.set(path, value, opts)
+    //             return this
+    //         },
+    //         state: store.state,
+    //         signals: store.signals,
+    //         services: store.services,
+    //         modules: store.modules,
+    //     }), state, signals)
+    // }
+
+    let connId = 0
+
+    /**
+        input = string | array | object | function
+        conn = function | object | null
+    */
+    store.connect = function(input, conn, strict = true) {
+
+        if (!input) return;
+
+        let props = {}
+        let deps = null
+
+        if (typeof input === 'string') {
+
+            deps = [input]
+
+        } else if (Array.isArray(input)) {
+
+            deps = input
+
+        } else if (typeof input === 'function') {
+
+            props = conn
+            conn = input
+            conn.displayName = input.displayName || input.name
+            deps = Object.keys(getDeps(store, conn.state, props))
+
+        } else if (typeof input === 'object') {
+
+            if (typeof conn !== 'function') {
+                props = conn || {}
+                conn = input.component || input.default
+            }
+            conn.props = input.props
+            conn.state = input.state
+            conn.signals = input.signals
+            conn.services = input.services
+            conn.displayName = input.displayName || input.name
+            deps = Object.keys(getDeps(store, input.state, props))
+        }
+
+        conn._id = connId++
+        conn._updateTime = getNow()
+        conn._paths = deps
+        conn.displayName = conn.displayName || conn.name || `conn-${connId}`
+
+        registry = deps.reduce((map, dep) => {
+            const key = strict ? dep : cleanPath(dep)
+            map[key] = map[key] ? map[key].concat(conn) : [conn]
+            return map
+        }, registry)
+
+        if (conn.state)
+            store.box(conn)
+        else
+            conn(store)
+
+        conn._updates = 1
+        conn._updatedTime = getNow()
+        conn._updateDuration = conn._updatedTime - conn._updateTime
+
+        store.emit('connect', conn)
+
+        return store.box(conn)
     }
 
-    store.props = function(input, props) {
-        return (typeof input === 'function')
-            ? input(props)
-            : { ...input,
-                ...props }
+    store.reconnect = function(deps, conn) {
+        store.disconnect(conn)
+        store.connect(deps, conn)
     }
 
-    store.deps = function(state, props) {
-        const deps = typeof state === 'function'
-            ? state(props, store.compute)
-            : state
-
-        return deps && Object.keys(deps).length
-            ? extractDeps(deps)
-            : {}
+    store.disconnect = function(conn) {
+        Object.keys(registry).forEach(key => {
+            if (registry[key].indexOf(conn) >= 0) {
+                registry[key].splice(registry[key].indexOf(conn), 1)
+            }
+            if (registry[key].length === 0) {
+                delete registry[key]
+            }
+        })
+        store.emit('disconnect', conn)
     }
 
-    store.stateMap = function(state, props) {
-        const deps = typeof state === 'function'
-            ? state(props, store.compute)
-            : state
-
-        return deps && Object.keys(deps).length
-            ? stateMap(deps)
-            : {}
-    }
-
-    store.connect = function(instance, props) {
-
-        const state = instance.module.state
-        props = props || instance.props
-
-        instance.deps = store.deps(state, props)
-        instance.stateMap = store.stateMap(state, props)
-        instance.paths = instance.deps
-            ? Object.keys(instance.deps)
-            : null
-
-        const registered = register(instance)
-
-        if (instance.connected)
-            instance.connected(store, registered)
-
-        instance.update(null)
-
-        store.emit('connect', { instance, registered })
-    }
-
-    store.reconnect = function(instance, props) {
-        store.disconnect(instance)
-        store.connect(instance, props)
-    }
-
-    store.disconnect = function(instance) {
-        unregister(instance)
-        if (instance.disconnected)
-            instance.disconnected(store)
-        store.emit('disconnect', { instance })
-    }
-
-    store.connections = function(changes) {
-        return traverse(changes)
-    }
-
-    store.state = function(input, props) {
-		return getState(store, input, props)
-    }
-
-    store.signals = function(input, props) {
-        return getSignals(controller.getSignals, input, props)
-    }
-
-    store.services = function(input) {
-        return controller.getServices(input)
-    }
-
-    store.modules = function(input) {
-        return controller.getModules(input)
-    }
-
-    store.model = function() {
-        return controller.getModel()
-    }
-
-    store.instances = function(path) {
-        if (path)
-            return store.registry[path]
-
+    function getConnections() {
         let instances = []
-        Object.keys(store.registry)
+        Object.keys(registry)
             .forEach(key => {
-                instances = store.registry[key]
+                instances = registry[key]
                     .reduce((instances, instance) => {
                         if (instances.indexOf(instance) === -1) {
                             return instances.concat(instance)
@@ -298,12 +300,14 @@ export default function bit(input, ...args) {
         return instances
     }
 
-    store.status = function() {
-        return Object.keys(store.registry)
-            .reduce((props, key) => {
-                props[key] = store.registry[key].map(c => c.module.displayName)
-                return props
-            }, {})
+    store.connections = function(input, strict = true) {
+        if (!input)
+            return registry
+        return typeof input === 'string'
+            ? registry[input]
+            : typeof input === 'object'
+                ? query(registry, input, strict)
+                : getConnections()
     }
 
     store.add = function(type, value) {
@@ -319,59 +323,57 @@ export default function bit(input, ...args) {
         if (!(type in types))
             throw (new Error(`Invalid type: ${type}, expected: ${Object.keys(types)}`))
 
-        controller[types[type]](value)
-        return controller['get' + types[type].substr(3)]()
+        instance[types[type]](value)
+        return instance['get' + types[type].substr(3)]()
     }
 
     store.on = function() {
-        controller.on(...arguments)
-        return controller._events
+        instance.on(...arguments)
+        return instance._events
     }
 
     store.once = function() {
-        controller.once(...arguments)
-        return controller._events
+        instance.once(...arguments)
+        return instance._events
     }
 
     store.off = function(type, fn) {
         if (fn)
-            controller.removeListener(type, fn)
+            instance.removeListener(type, fn)
         else
-            controller.removeAllListeners(...arguments)
-        return controller._events
+            instance.removeAllListeners(...arguments)
+        return instance._events
     }
 
     store.emit = function() {
-        controller.emit(...arguments)
+        instance.emit(...arguments)
     }
 
-    store.updateIndex = 0
-    store.updateStart = 0
-    store.updateEnd = 0
+
     // *
 
     store.on('flush', changes => {
-
-        const instances = traverse(changes)
-
-        store.updateIndex++
-        store.updateStart = getNow()
-
-        instances.forEach((instance, index) => {
-            const start = getNow()
-            instance._updateIndex = index
-            instance._updateTime = getNow()
-            instance.update(changes)
-            instance._updates++
-            instance._updatedTime = getNow()
-            instance._updateDuration = instance._updatedTime - instance._updateTime
-        })
-
-        store.updateEnd = getNow()
+        store.connections(changes, true)
+            .forEach(connection => {
+                if (store.config.dev)
+                    connection._updateTime = getNow()
+                if (connection.state) {
+                    store.box(connection)
+                    //connection(store(connection))
+                } else {
+                    connection(store)
+                }
+                if (store.config.dev) {
+                    connection._updates = (connection._updates || 0) + 1
+                    connection._updatedTime = getNow()
+                    connection._updateDuration = connection._updatedTime - connection._updateTime
+                }
+            })
     })
 
     bit.map.set(input, store)
-    bit.map.set(store.tagName, store)
+    if (name)
+        bit.map.set(name, store)
 
     return args.length
         ? store(...args)

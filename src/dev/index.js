@@ -41,8 +41,11 @@ export default {
 			}
 	},
 
-	connected(store, res) {
-		this.context.store = store
+	connect(store) {
+		if (store)
+			this.context.store = store
+		else
+			store = this.context.store
 		this.bootstrap()
 		this.onFlush([])
 		this.updateBody()
@@ -62,13 +65,13 @@ export default {
 			this.onFlush([])
 		})
 		isBrowser && window.addEventListener('cerebral.dev.componentMapPath', event => {
-			this.showOverlays(store.registry[event.detail.mapPath])
+			this.showOverlays(store.connections(event.detail.mapPath))
 		})
 	},
 
 	componentWillMount() {
 		this.context.store &&
-		this.context.store.connect(this)
+		this.connect()
 	},
 
 	componentDidMount() {
@@ -77,7 +80,7 @@ export default {
 
 	componentWillUnmount() {
 		this._isUmounting = true
-		this.context.store.disconnect(this)
+		//this.context.store.disconnect(this)
 		this.context.store.off('flush', this.onFlush)
 	},
 
@@ -85,27 +88,9 @@ export default {
 		const { store } = this.context
 
 		const changedPaths = extractPaths(changes)
-		const activePaths = Object.keys(store.registry)
-		const instancesToUpdate = store.connections(changes)
-
-		changedPaths.forEach(path => {
-			if (!this.storeStats[path])
-				this.storeStats[path] = {}
-			this.storeStats[path].time = getNow()
-			this.storeStats[path].updateIndex = (this.storeStats[path].updateIndex || 0) + 1
-		})
-
-		let instances = []
-		Object.keys(store.registry)
-			.forEach(key => {
-				instances = store.registry[key]
-					.reduce((instances, instance) => {
-						if (instances.indexOf(instance) === -1) {
-							return instances.concat(instance)
-						}
-						return instances
-					}, instances)
-			})
+		const activePaths = store.paths()
+		const instances = store.connections(true)
+		const instancesToUpdate = store.connections(changes, true)
 
 		this.paths = activePaths
 			.map(path => {
@@ -116,7 +101,6 @@ export default {
 					time,
 					changed,
 					updateIndex,
-					//instances: instances.map(i => i.displayName)
 				}
 			})
 			.sort((a, b) => b.time - a.time)
@@ -127,17 +111,13 @@ export default {
 		this.activeInstances = instances.sort((a, b) => b._updateTime - a._updateTime)
 
 		this.setState({
-			paths: changedPaths,
-			// changes: changedPaths.reverse().reduce((c, path) => {
-			// 	c[path] = store.state(path)
-			// 	return c;
-			// }, {})
+			paths: changedPaths
 		})
 
 		if (isBrowser && store.config.dev && instances.length) {
-			const map = Object.keys(store.registry)
-				.reduce((map, key) => {
-					map[key] = store.registry[key].map(i => i.module.tagName)
+			const map = store.paths()
+				.reduce((map, path) => {
+					map[path] = store.connections(path).map(conn => conn.displayName)
 					return map;
 				}, {})
 			window.dispatchEvent(new CustomEvent('cerebral.dev.components', {
@@ -147,7 +127,7 @@ export default {
 						changes,
 						start: store.updateStart,
 						duration: store.updateEnd - store.updateStart,
-						components: instancesToUpdate.map(i => i.module.tagName)
+						components: instancesToUpdate.map(conn => conn.displayName)
 					}
 				}
 			}))
@@ -161,7 +141,7 @@ export default {
 		//console.log(`path: ${path}:`, store.state(path))
 		this.setState({ paths })
 		const instances = paths.reduce((c, k) => {
-			return store.registry[k]
+			return store.connections(k, true)
 				.reduce((instances, instance) => {
 					if (instances.indexOf(instance) === -1) {
 						return instances.concat(instance)
@@ -169,19 +149,22 @@ export default {
 					return instances
 				}, c)
 		}, [])
+		this.instancesToUpdate = instances
 		this.showOverlays(instances)
 	},
 
-	selectInstance(instance) {
+	selectInstance(i) {
 		const { store } = this.context
-		const paths = instance.paths
+		const paths = i._paths || []
 		this.changedPaths = paths
+		this.instancesToUpdate = [i]
 		//console.log(`instance: ${instance.module.tagName}:`, paths)
 		this.setState({
-			selectedInstance: instance._index,
+			selectedInstance: i._index,
 			paths: paths,
 		})
-		this.showOverlays([instance])
+		if (i.instance)
+			this.showOverlays([i])
 	},
 
 	showOverlays(instances) {
@@ -190,10 +173,13 @@ export default {
 		this.overlays = instances.map((i, index) => {
 			return {
 				key: index,
-				name: i.module.tagName,
+				index: index,
+				name: i.displayName || i.name,
 				updates: i._updates,
 				duration: i._updateDuration,
-				client: getBoundingClient(i)
+				client: i.instance
+					? getBoundingClient(i.instance)
+					: {}
 			}
 		})
 
@@ -208,8 +194,55 @@ export default {
 				this._overlaysOpacity = 1
 				this.update()
 			}, 500)
-		}, 2000)
+		}, 3000)
 
+	},
+
+	nodeOverlays(nodes) {
+		clearTimeout(this.tid)
+
+		this.overlays = nodes.map((node, index) => {
+			return {
+				key: index,
+				index: index,
+				name: 0,
+				updates: 0,
+				duration: 0,
+				client: getBoundingClient(node)
+			}
+		})
+
+		this._overlaysOpacity = 1
+		this.update()
+
+		this.tid = setTimeout(() => {
+			this._overlaysOpacity = 0
+			this.update()
+			this.tid = setTimeout(() => {
+				this.overlays = []
+				this._overlaysOpacity = 1
+				this.update()
+			}, 500)
+		}, 3000)
+
+	},
+
+	moduleInstances(instances) {
+		const nodes = []
+		if (instances)
+		instances.forEach((i) => {
+			// box.render(null, i.instance.dom.parentNode)
+			i.instance.dom.style.transition = 'opacity 0.3s ease-out'
+			i.instance.dom.style.opacity = '0.3'
+			setTimeout(() => {
+				i.instance.dom.style.opacity = '1'
+			}, 500)
+
+			nodes.push(i.instance.dom)
+			console.log()
+		})
+		if (nodes.length)
+			this.nodeOverlays(nodes)
 	},
 
 	update() {
@@ -250,8 +283,13 @@ export default {
 	},
 
 	component(props, box) {
+
+		//window._nodeMap = this._componentToDOMNodeMap
+
+		//console.log('devvv', box.registry, this._componentToDOMNodeMap)
+
 		const { store } = this.context
-		if (!store)
+		if (!store || !store.config.dev)
 			return;
 
 		const { position } = this.state
@@ -316,6 +354,8 @@ export default {
 		const pathsPosition = pathsPositions[position]
 		const instancesPosition = instancesPositions[position]
 
+		const overlaysLength = this.overlays.length
+
 		return box('bitbox-devtools', {
 			style: {
 				fontFamily: 'Roboto, "Helvetica Neue", Arial',
@@ -347,7 +387,7 @@ export default {
 					changed: this.changedPaths,
 					storeName: store.displayName,
 					selected: this.state.paths,
-					registry: store.registry,
+					registry: store.connections(),
 					onSelect: path => {
 						this.selectPaths([path])
 					},
@@ -372,7 +412,7 @@ export default {
 					changedPaths: this.changedPaths,
 					selectedPaths: this.state.paths,
 					selected: this.state.selectedInstance,
-					registry: store.registry,
+					registry: store.connections(),
 					storeStats: this.storeStats,
 					//appNode: this.props.appNode,
 					onSelect: instance => {
@@ -397,7 +437,7 @@ export default {
 					opacity: this._overlaysOpacity,
 					transition: 'opacity 0.5s'
 				}
-			}, this.overlays.map(o => box(overlay, o)))
+			}, this.overlays.map((o, idx) => box(overlay, { ...o, idx, length: overlaysLength })))
 
 		])
 	}

@@ -4,6 +4,24 @@ import appbar from './appbar'
 import * as title from './title'
 import {getTime,getBoundingClient} from './helpers'
 
+function selected(changes) {
+	return keyArray.reduce(function (currentChangePath, key, index) {
+	  if (currentChangePath === true) {
+		return currentChangePath
+	  } else if (!currentChangePath) {
+		return false
+	  }
+
+	  if (key === '*' && index === keyArray.length - 1) {
+		return true
+	  } else if (key === '**') {
+		return true
+	  }
+
+	  return currentChangePath[key]
+	}, changes) === true
+}
+
 export default (bit, box) => {
 	return box('div', {
 		style: {
@@ -30,14 +48,16 @@ export default (bit, box) => {
 			style: style.items
 		}, bit.items.map(i => {
 
-			const toUpdate = bit.updated.indexOf(i) > -1
-			const client = getBoundingClient(i)
+			const client = i.instance ? getBoundingClient(i.instance) : {}
 			const date = new Date(i._updateTime)
 
 			const sel = i.paths && bit.selectedPaths
-				? i.paths.filter(path => bit.selectedPaths.indexOf(path) > -1)
+				? i.paths.filter(path => {
+					bit.selectedPaths.indexOf(path) > -1
+				})
 				: []
-			const selected = sel.length // || bit.selected === i._index
+			const selected = bit.updated.indexOf(i) > -1 //sel.length // || bit.selected === i._index
+			const toUpdate = selected //bit.updated.indexOf(i) > -1
 
 			return box('div', {
 				style: style.item(toUpdate, selected)
@@ -49,7 +69,7 @@ export default (bit, box) => {
 						: null
 				}, [
 					//i._updateIndex, ' ',
-					i.module.tagName,
+					i.displayName || i.name,
 					i._index
 						? box('span', {
 							style: style.index
@@ -62,10 +82,24 @@ export default (bit, box) => {
 				}, client.width
 					? [ Math.round(client.width), ' x ', Math.round(client.height) ]
 					: [ ]),
-				box(deps, {
+
+				i.moduleName
+					? box('div', {
+						style: {
+							fontSize: 12,
+							color: color('cyan', 0.7),
+							padding: '0 0 4px 16px'
+						}
+					}, i.moduleName)
+					: '',
+
+				i.instance
+					? box(deps, {
 					key: 'item-deps',
 					//deps: i.deps,
-					stateMap: i.stateMap,
+					stateMap: i.instance
+						? i.instance.stateMap
+						: {},
 					stats: bit.storeStats,
 					changedPaths: bit.selectedPaths,
 					// selected
@@ -74,13 +108,19 @@ export default (bit, box) => {
 					onSelect: bit.onPathSelect
 						? bit.onPathSelect
 						: null
-				}),
+					})
+					: box('div', {
+						style: {
+							fontSize: 14,
+							margin: '0 0 0 16px'
+						}
+					}, i._paths.join(' | ')),
 				box('section', {
 					style: style.timeWrapper
 				}, [
 					box('span', { style: style.time }, getTime(date)),
 					box('span', { style: style.time }, ['(', (i._updates || '0'), ')']),
-					box('span', { style: { ...style.time, border: 0 } }, i._updateDuration.toFixed(2) + 'ms')
+					box('span', { style: { ...style.time, border: 0 } }, (i._updateDuration||0).toFixed(2) + 'ms')
 				]),
 			])
 		}))

@@ -1,0 +1,19 @@
+export const props = {
+	root: '#app',
+	value: 'Hello'
+}
+
+export const hooks = {
+	'did mount'(node) {
+		console.log('pure mounted', node)
+	}
+}
+
+export const devbox = {}
+
+export default function pure(props, box) {
+	console.log('pure fn', props, this)
+	if (devbox.store)
+		console.log('instance', devbox, devbox.store(devbox.meta))
+	return box('h1', props.value)
+}

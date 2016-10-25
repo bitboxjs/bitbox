@@ -4,15 +4,16 @@ import * as hooks from './hooks'
 import * as toggle from './toggle'
 import * as hello from './input'
 import * as classbox from './classbox'
+import * as counter from './counter'
+import * as counters from './counters'
 
+export const moduleName = 'main-app.box'
 export const props = {
 	root: '#app'
 }
 
 export const state = {
-	showHooksDemo: 'app.showHooks',
-	foo: 'c.count',
-	bar: 'b.count'
+	showHooksDemo: 'app.showHooks'
 }
 
 export default function demoApp(bit, box) {
@@ -22,6 +23,12 @@ export default function demoApp(bit, box) {
 	//tree.push(box(classbox))
 	tree.push(box(title))
 	tree.push(box(hello))
+
+	tree.push(box(counter, { id: 'foo' }))
+	tree.push(box(counter, { id: 'bar' }))
+	tree.push(box(counter, { id: 'baz' }))
+	tree.push(box(counters))
+
 	tree.push(box(count, { id: 'app', key: 'c-app' }))
 	tree.push(box(count, { id: 'a', key: 'c-a' }), box(count, { id: 'b', key: 'c-b' }), box(count, { id: 'c', key: 'c-c' }))
 
